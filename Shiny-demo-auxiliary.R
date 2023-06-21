@@ -1,3 +1,16 @@
+library(shiny)
+library(plotly)
+library(shinyjs)
+library(ECharts2Shiny)
+library(tidyverse)
+library(highcharter)
+library(shinydashboard)
+library(markdown)
+library(shinyWidgets)
+library(shinyscreenshot)
+library(ggplot2)
+library(magrittr)
+
 ##### INSTALL AND REQUIRE PACKAGES #####
 
 ##### DISABLE SCIENTIFIC NOTATION OF VALUES IN PLOT #####
@@ -8,39 +21,43 @@ options(scipen=999)
 
 suppressMessages(
   
-  investmentchangedata <- readxl::read_excel("~/R/Shiny_demo/data/001_12r6_2022q4_20230511-092217.xlsx")
+  investmentchangedata <- readxl::read_excel("data/001_12r6_2022q4_20230511-092217.xlsx")
 
 )
 
 suppressMessages(
   
-  entryexitdata <- readxl::read_excel("~/R/Shiny_demo/data/001_11yq_2022q4_20230511-122745.xlsx")
+  entryexitdata <- readxl::read_excel("data/001_11yq_2022q4_20230511-122745.xlsx")
   
 )
 
 suppressMessages(
   
-  handoutdata <- readxl::read_excel('~/R/Shiny_demo/data/001_12s5_2021q4_20230515-084538.xlsx')
+  handoutdata <- readxl::read_excel('data/001_12s5_2021q4_20230515-084538.xlsx')
   
 )
 
 suppressMessages(
   
-  revenuedata <- readxl::read_excel("~/R/Shiny_demo/data/001_123y_2023m03_20230516-115325.xlsx")
+  revenuedata <- readxl::read_excel("data/001_123y_2023m03_20230516-115325.xlsx")
   
 )
 
 suppressMessages(
   
-  konkurssisarja <- readxl::read_excel("~/R/Shiny_demo/data/konkurssit.xlsx")
+  konkurssisarja <- readxl::read_excel("data/konkurssit.xlsx")
   
 )
+
+colnames(konkurssisarja)[2] <- "konkursseja"
+
+konkursseja <- konkurssisarja[,2]
 
 konkurssisarja <- data_cropper(konkurssisarja, c(1:2), c(1:2), c(449:480))
 
 suppressMessages(
   
-  palkkasummaindeksi <- readxl::read_excel("~/R/Shiny_demo/data/palkkasummaindeksi.xlsx")
+  palkkasummaindeksi <- readxl::read_excel("data/palkkasummaindeksi.xlsx")
   
 )
 
@@ -48,7 +65,7 @@ palkkasummaindeksi <- data_cropper(palkkasummaindeksi, c(1,4), c(1:3), c(340:382
 
 suppressMessages(
   
-  tuotantosuhdanneindeksi <- readxl::read_excel("~/R/Shiny_demo/data/tuotantosuhdanne.xlsx")
+  tuotantosuhdanneindeksi <- readxl::read_excel("data/tuotantosuhdanne.xlsx")
   
 )
 
@@ -56,7 +73,7 @@ tuotantosuhdanneindeksi <- data_cropper(tuotantosuhdanneindeksi, c(1,3), c(1:2),
 
 suppressMessages(
   
-  kuluttajahintaindeksi <- readxl::read_excel("~/R/Shiny_demo/data/kuluttajahintaindeksi.xlsx")
+  kuluttajahintaindeksi <- readxl::read_excel("data/kuluttajahintaindeksi.xlsx")
   
 )
 
@@ -64,13 +81,37 @@ kuluttajahintaindeksi <- data_cropper(kuluttajahintaindeksi, c(1,3), c(1:2), c(2
 
 handoutdata <- as.data.frame(handoutdata)
 
-BRC <- read.csv(file='~/R/Shiny_demo/data/BRC.csv')
+suppressMessages(
+  
+  BRCfin <- readxl::read_excel("data/BRCsuomi.xlsx")
+  
+)
 
-shapefile <- rgdal::readOGR(dsn="~/R/NUTS_EURO_data", layer="NUTS_RG_20M_2021_3035")
+suppressMessages(
+  
+  kunnatmaakunnat <- read.csv("data/kunnat_maakunnat_avain.csv")
+  
+)
+
+suppressMessages(
+  
+  kunnattuottavuus <- read.csv("data/kunnattuottavuus.csv")
+  
+)
+
+BRC <- read.csv(file='data/BRC.csv')
+
+shapefile <- rgdal::readOGR(dsn="data/NUTS_EURO_data", layer="NUTS_RG_20M_2021_3035")
 
 ##### DEFINE CHOICE, VALUE AND CONVERSION VECTORS #####
 
-colnames(entryexitdata) <- c("vuosineljännes", "kategoria", "luokitus", "nentry", "nexit", "ntotal")
+plotvec <- c("FI1B1", "FI1C1", "FI196", "FI1C2", "FI197", "FI1C3", "FI1C4", "FI1C5", "FI1D1", 
+             "FI1D2", "FI1D3", "FI193", "FI194", "FI195", "FI1D5", "FI1D9", "FI1D8", "FI1D7", "FI200")
+
+plotvec2 <- c("FI200", "FI193", "FI194", "FI195", "FI196", "FI197", "FI1B1", "FI1D7", "FI1D8", "FI1D9", "FI1C1",
+              "FI1C2","FI1C3", "FI1C4", "FI1C5", "FI1D3", "FI1D2", "FI1D1", "FI1D5")
+
+colnames(entryexitdata) <- c("vuosineljännes", "kategoria", "luokitus", "aloittaneet", "lopettaneet", "ntotal")
 
 variableselection <- c("bankruptcies", "productivity estimates", "firm subsidies")
 
@@ -82,36 +123,100 @@ regioncharvec <- c("FI193", "FI194", "FI195", "FI196", "FI197",
                    "FI1C1", "FI1C2", "FI1C3", "FI1C4", "FI1C5",
                    "FI200")
 
-industrychoicevec <- c("Agriculture, Forestry, And Fishing" = "AFF",
-                       "Mining" = "MIN",
-                       "Construction" = "CON",
-                       "Manufacturing"="MAN",
-                       "Transportation, Communications, Electric, Gas, And Sanitary Services"="TCE",
-                       "Wholesale Trade"="WHO",
-                       "Retail Trade"="RET",
-                       "Finance, Insurance, And Real Estate"="FIN",
-                       "Services"="SER",
-                       "Public Administration"="PUB")
+industrychoicevec <- c("Maa-, metsä ja kalatalous",
+                       "Teollisuus, kaivostoiminta sekä energia- ja vesihuolto",
+                       "Rakennustoiminta",
+                       "Kauppa",
+                       "Kuljetus ja varastointi",
+                       "Majoitus- ja ravitsemistoiminta",
+                       "Muut palvelut",
+                       "Tuntematon")
 
-regionchoicevec <- c("Ahvenanmaa" = "FI200",
-                     "Keski-Suomi" = "FI193",
-                     "Etelä-Pohjanmaa" ="FI194",
-                     "Pohjanmaa" = "FI195",
-                     "Satakunta" = "FI196",
-                     "Pirkanmaa" = "FI197",
-                     "Uusimaa" = "FI1B1",
-                     "Lappi" = "FI1D7",
-                     "Kainuu" = "FI1D8",
-                     "Pohjois-Pohjanmaa" = "FI1D9",
-                     "Varsinais-Suomi"= "FI1C1", 
-                     "Kanta-Häme" = "FI1C2", 
-                     "Päijät-Häme" = "FI1C3",
-                     "Kymenlaakso" = "FI1C4",
-                     "Etelä-Karjala" = "FI1C5", 
-                     "Etelä-Savo" = "FI1D1",
-                     "Pohjois-Savo" = "FI1D2",
-                     "Pohjois-Karjala" = "FI1D3",
-                     "Keski-Pohjanmaa" = "FI1D5") 
+#regionchoicevec <- c("MK21 Ahvenanmaa" = "FI200",
+#                     "MK13 Keski-Suomi" = "FI193",
+#                     "MK14 Etelä-Pohjanmaa" ="FI194",
+#                     "MK15 Pohjanmaa" = "FI195",
+#                     "MK04 Satakunta" = "FI196",
+#                     "MK06 Pirkanmaa" = "FI197",
+#                     "MK01 Uusimaa" = "FI1B1",
+#                     "MK20 Lappi" = "FI1D7",
+#                     "MK18 Kainuu" = "FI1D8",
+#                     "MK17 Pohjois-Pohjanmaa" = "FI1D9",
+#                     "MK02 Varsinais-Suomi"= "FI1C1", 
+#                     "MK05 Kanta-Häme" = "FI1C2", 
+#                     "MK07 Päijät-Häme" = "FI1C3",
+#                     "MK08 Kymenlaakso" = "FI1C4",
+#                     "MK09 Etelä-Karjala" = "FI1C5", 
+#                     "MK10 Etelä-Savo" = "FI1D1",
+#                     "MK11 Pohjois-Savo" = "FI1D2",
+#                     "MK12 Pohjois-Karjala" = "FI1D3",
+#                     "MK16 Keski-Pohjanmaa" = "FI1D5") 
+
+regionchoicevec <- c("Ahvenanmaa" = "MK21 Ahvenanmaa",
+                     "Keski-Suomi" = "MK13 Keski-Suomi",
+                     "Etelä-Pohjanmaa" = "MK14 Etelä-Pohjanmaa",
+                     "Pohjanmaa" = "MK15 Pohjanmaa",
+                     "Satakunta" = "MK04 Satakunta",
+                     "Pirkanmaa" = "MK06 Pirkanmaa",
+                     "Uusimaa" = "MK01 Uusimaa",
+                     "Lappi" = "MK19 Lappi",
+                     "Kainuu" = "MK18 Kainuu",
+                     "Pohjois-Pohjanmaa" = "MK17 Pohjois-Pohjanmaa",
+                     "Varsinais-Suomi" = "MK02 Varsinais-Suomi", 
+                     "Kanta-Häme" = "MK05 Kanta-Häme", 
+                     "Päijät-Häme" = "MK07 Päijät-Häme",
+                     "Kymenlaakso" = "MK08 Kymenlaakso",
+                     "Etelä-Karjala" = "MK09 Etelä-Karjala", 
+                     "Etelä-Savo" = "MK10 Etelä-Savo",
+                     "Pohjois-Savo" = "MK11 Pohjois-Savo",
+                     "Pohjois-Karjala" = "MK12 Pohjois-Karjala",
+                     "Keski-Pohjanmaa" = "MK16 Keski-Pohjanmaa")
+
+regionchoicevectemp <- c("MK21 Ahvenanmaa",
+                         "MK13 Keski-Suomi",
+                         "MK14 Etelä-Pohjanmaa",
+                         "MK15 Pohjanmaa",
+                         "MK04 Satakunta",
+                         "MK06 Pirkanmaa",
+                         "MK01 Uusimaa",
+                         "MK19 Lappi",
+                         "MK18 Kainuu",
+                         "MK17 Pohjois-Pohjanmaa",
+                         "MK02 Varsinais-Suomi", 
+                         "MK05 Kanta-Häme", 
+                         "MK07 Päijät-Häme",
+                         "MK08 Kymenlaakso",
+                         "MK09 Etelä-Karjala", 
+                         "MK10 Etelä-Savo",
+                         "MK11 Pohjois-Savo",
+                         "MK12 Pohjois-Karjala",
+                         "MK16 Keski-Pohjanmaa")
+
+regionchoicevectemp2 <- c("Ahvenanmaa",
+                          "Keski-Suomi",
+                          "Etelä-Pohjanmaa",
+                          "Pohjanmaa",
+                          "Satakunta",
+                          "Pirkanmaa",
+                          "Uusimaa",
+                          "Lappi",
+                          "Kainuu",
+                          "Pohjois-Pohjanmaa",
+                          "Varsinais-Suomi", 
+                          "Kanta-Häme", 
+                          "Päijät-Häme",
+                          "Kymenlaakso",
+                          "Etelä-Karjala", 
+                          "Etelä-Savo",
+                          "Pohjois-Savo",
+                          "Pohjois-Karjala",
+                          "Keski-Pohjanmaa")
+
+BRCfinsubs <- data.frame(maakunta = regionchoicevectemp, nutsname = plotvec2)
+
+BRCfinsubs2 <- data.frame(maakunta = regionchoicevectemp2, nutsname = plotvec2)
+
+BRCfinzeros <- data.frame(maakunta = regionchoicevectemp, nutsname = plotvec2, nobs = numeric(length(regionchoicevectemp)))
 
 decomposedchoiceY <- c("decomposed" = "decY")
 decomposedcharY <- c("decY")
@@ -283,8 +388,6 @@ TOLchoicevec34 <- c("Kaikki","Koko teollisuus (B-E)" = "(B-E)", "Rakentaminen (F
 variablechoicevec34 <- c("Kaikki","Alkuperäinen indeksisarja", "Työpäiväkorjattu indeksisarja", "Kausitasoitettu indeksisarja", "Trendisarja")
 
 keywords = c("lama", "konkurssit", "yritystuet", "ansiosidonnainen")
-
-plotvec <- c("FI1B1", "FI1C1", "FI196", "FI1C2", "FI197", "FI1C3", "FI1C4", "FI1C5", "FI1D1", "FI1D2", "FI1D3", "FI193", "FI194", "FI195", "FI1D5", "FI1D9", "FI1D8", "FI1D7", "FI200")
 
 etusivu_url <- "yritysryhma"
 

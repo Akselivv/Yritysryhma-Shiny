@@ -1,283 +1,277 @@
+library(shiny)
+library(plotly)
+library(shinyjs)
+library(ECharts2Shiny)
+library(tidyverse)
+library(highcharter)
+library(shinydashboard)
+library(markdown)
+library(shinyWidgets)
+library(shinyscreenshot)
+library(ggplot2)
+library(magrittr)
+
 ##### TASKS #####
 
   ##### TO DO #####
 
-  # Implement all (future) time series plots with plotly/ts_plot
-  
-  # Fix dates on barplots
-  
-  # Implement data collecting from third parties
-  
-  # Implement monthly barplots 
-  
-  # Implement a demo of scatterplot/heatmap/causal visualization?
+  # Lisää toimialakohtaiset aggregaattituottavuudet (Data jo olemassa)
   
   ##### DONE #####
-  
-  # Fix map colours 
-
-  # Fix Entry/Exit layout (kinda)
 
 ##### SOURCE AUXILIARY SCRIPTS #####
 
-source("~/R/Shiny_demo/Shiny-demo-functions.R")
+source("Shiny-demo-functions.R")
 
-source("~/R/Shiny-demo-scraper.R")
+source("Shiny-demo-scraper.R")
 
-source("~/R/Shiny_demo/Shiny-demo-auxiliary.R")
+source("Shiny-demo-auxiliary.R")
 
-source("~/R/Shiny_demo/Shiny-demo-wrangling.R")
+source("Shiny-demo-wrangling.R")
 
 ##### DEFINE UI #####
 
 ui <- navbarPage(
-    
-    windowTitle="Yritysryhma",
+  
+  useShinyjs(),
+  
+    windowTitle="Yritysryhmän demo",
     id="navbarID",
     
-    tabPanel("Loadbearing tab"),
+    ##### ETUSIVU #####
     
-    ##### BANKRUPTCY SECTION #####
-    tabPanel(title="Etusivu",
-             value=etusivu_url,
-             
-             sidebarLayout(
-               sidebarPanel(
-                 fluidRow(
-                   column(12, valueBoxOutput("vbox1")),
-                   column(12, valueBoxOutput("vbox2")),
-                   column(12, highchartOutput("firmTreeMap", height="800px"))
-                 )
-               ),
-               
-               mainPanel(
-                 tags$head(tags$style(".rightAlign{float:right;}")),
-                 fluidRow(
-                   column(12, img(id="image1", src="logo1.jpg", style="cursor:pointer;"), useShinyjs()),
-                   column(12, img(id="image2", src="konkurssit.jpg", style="cursor:pointer;"), useShinyjs()),
-                   column(12, img(id="image3", src="kokeelliset.jpg", style="cursor:pointer;"), useShinyjs()),
-                   column(12, img(id="image4", src="tuottavuus.jpg", style="cursor:pointer;"), useShinyjs()),
-                   column(12, tags$figure(class= "centerFigure", tags$img(
-                     src="whitespace.png", align="center",
-                     width=1200,
-                     alt=" "
-                   ),tags$figcaption(" "))),
-                   column(12, includeMarkdown("Shiny-demo-markdown-1.markdown")),
-                   column(12, tags$figure(class= "centerFigure", tags$img(
-                     src="whitespace.png", align="center",
-                     width=1200,
-                     alt=" "
-                   ),tags$figcaption(" "))),
-                   
-                   column(12, splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("bankruptcySeries"), plotlyOutput("payrollSeries"))),
-                   column(12, splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("inflationSeries"), plotlyOutput("cycleSeries"))),
-                   
-                   #column(12, plotlyOutput("bankruptcySeries")),
-                   
-                   column(12, tags$figure(class= "centerFigure", tags$img(
-                     src="whitespace.png", align="center",
-                     width=1200,
-                     alt=" "
-                   ),tags$figcaption(" "))),
-                   column(12, plotlyOutput("searchInterest")),
-                 )
-               )
-             )
+navbarMenu(
+  title="Yritysryhmä",
+      
+  tabPanel(
+      title="Yritysryhmän etusivu",
+      
+          sidebarLayout(
+          sidebarPanel(
+            fluidRow(
+              actionButton("kuvankaappaus1", "Kuvankaappaus"),
+              img(id="initialtag1", src="yritystag.jpg", style="cursor:pointer;"), 
+              img(id="initialtag2", src="investointitag.jpg", style="cursor:pointer;"), 
+              img(id="initialtag3", src="konkurssitag.jpg", style="cursor:pointer;"), 
+              img(id="initialtag4", src="karttatag.jpg", style="cursor:pointer;"), 
+              img(id="initialtag5", src="tuottavuustag.jpg", style="cursor:pointer;"), 
+              column(12, valueBoxOutput("vbox1")),
+              column(12, valueBoxOutput("vbox2")),
+              column(12, highchartOutput("firmTreeMap", height="800px")),
+              tags$a(
+                
+                href = "https://www.prh.fi/fi/kaupparekisteri/yritystenlkm/lkm.html",
+                target = "_blank",
+                valueBox(
+                  
+                  "",
+                  "Lähde: Patentti- ja rekisterihallitus, Yritysten lukumäärät kaupparekisterissä"
+                
+                )  
+              )
+            )
+          ),
+          
+          mainPanel(
+            fluidRow(
+              column(12, img(id="image1", src="logo1.jpg", style="cursor:pointer;"), useShinyjs()),
+              column(12, img(id="image2", src="konkurssit.jpg", style="cursor:pointer;"), useShinyjs()),
+              column(12, img(id="image3", src="kokeelliset.jpg", style="cursor:pointer;"), useShinyjs()),
+              column(12, img(id="image4", src="tuottavuus.jpg", style="cursor:pointer;"), useShinyjs()),
+              column(12, tags$figure(class= "centerFigure", tags$img(
+                src="whitespace.png", align="center",
+                width=1200,
+                alt=" "
+              ),tags$figcaption(" "))),
+              column(12, includeMarkdown("Shiny-demo-markdown-frontpage.markdown")),
+              column(12, tags$figure(class= "centerFigure", tags$img(
+                src="whitespace.png", align="center",
+                width=1200,
+                alt=" "
+              ),tags$figcaption(" "))),
+              
+              column(12, splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("bankruptcySeries"), plotlyOutput("payrollSeries")))),
+            fluidRow(tags$a(
+              
+              href = "https://stat.fi/tilasto/kony",
+              target = "_blank",
+              valueBox(
+                
+                "",
+                "Lähde: Tilastokeskus. 13fb -- Konkurssit kuukausittain vuodesta 1986, 1986M01-2023M04", width=6
+              ) 
+              
+            ), tags$a(
+              
+              href = "https://www.stat.fi/tilasto/ktps",
+              target = "_blank",
+              valueBox(
+                
+                "",
+                "Lähde: Tilastokeskus. 111m -- Palkkasummakuvaajat toimialoittain kuukausitasolla (2015=100), 1995M01-2023M03", width=6
+              ) 
+              
+            )),
+            fluidRow(column(12, splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("inflationSeries"), plotlyOutput("cycleSeries")))),
+            fluidRow(tags$a(
+              
+              href = "https://www.stat.fi/tilasto/khi",
+              target = "_blank",
+              valueBox(
+                
+                "",
+                "Lähde: Tilastokeskus. 11xb -- Kuluttajahintaindeksi (2015=100), kuukausitiedot, 2015M01-2023M04", width=6
+              ) 
+              
+            ), tags$a(
+              
+              href = "https://www.stat.fi/tilasto/ktkk",
+              target = "_blank",
+              valueBox(
+                
+                "",
+                "Lähde: Tilastokeskus. 132f -- Tuotannon suhdannekuvaaja, kuukausittain, 1995M01-2023M03", width=6
+              ) 
+              
+            )),
+            fluidRow(   
+              column(12, tags$figure(class= "centerFigure", tags$img(
+                src="whitespace.png", align="center",
+                width=1200,
+                alt=" "
+              ),tags$figcaption(" "))),
+              column(12, plotlyOutput("searchInterest"))),
+            fluidRow(valueBoxOutput("emptyvbox6", width = 8), tags$a(
+              
+              href = "https://trends.google.com/trends/explore?date=2017-06-14%202023-06-14&geo=FI&q=konkurssit,lama,yritystuet,ansiosidonnainen&hl=fi",
+              target = "_blank",
+              valueBox(
+                
+                "",
+                "Lähde: Google Trends"
+                
+              ) 
+              
+              )
+          )
+        )
+      )
     ),
     
-    navbarMenu(title="Bankruptcies",
+    ##### BANKRUPTCY SECTION #####
                
                ##### BANKRUPTCY GRAPHPLOT id 12 #####
-               
+  
                tabPanel(
-                 title="Time Series (Graph)",
+                 title="Konkurssit",
                  #value=bankruptcy_time_series_graph_url,
                  
                  sidebarLayout(
                    sidebarPanel(
+                     
+                     actionButton("kuvankaappaus2", "Kuvankaappaus"),
+                     
+                     img(id="tag311", src="konkurssitag.jpg", style="cursor:pointer;"), 
+                     
                      dateRangeInput("dates12", "Select dates:",
                                     start= "1980-01-01",
                                     end = as.character(Sys.Date())),
                      
-                     checkboxGroupInput("industries12", "Select Industries:",
+                     checkboxGroupInput("industries12", "Valitse toimialat:",
                                         industrychoicevec,
-                                        selected = industrycharvec),
+                                        selected = industrychoicevec),
                      
-                     actionLink("selectallindustries12", label="Select/Deselect all industries"),
+                     actionLink("selectallindustries12", label="Valitse kaikki/Poista valinnat"),
                      
-                     checkboxGroupInput("regions12", "Select Regions:",
+                     checkboxGroupInput("regions12", "Valitse maakunnat:",
                                         regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions12", label="Select/Deselect all regions")),
+                                        selected = regionchoicevec),
+                     actionLink("selectallregions12", label="Valitse kaikki/Poista valinnat"),
+                     checkboxGroupInput("graphchoice12", "Muokkaa Esitystapaa:", c("Palkit"), selected=NULL),
+                     plotOutput("FinMapPlot")),
                    
                    mainPanel(
                      fluidRow(
-                       column(12,plotOutput("timeSeries")),
-                       column(12,plotOutput("MatPlotIndustry")),
-                       column(12,plotOutput("MatPlotRegion")))
+                       column(12,plotlyOutput("timeSeries")),
+                       column(12,plotlyOutput("DecompTimeSeriesRegion")),
+                       column(12,plotlyOutput("DecompTimeSeriesIndustry")),
+                       fluidRow(valueBoxOutput("emptyvbox7", width = 8), tags$a(
+                         
+                         href = "https://pxdata.stat.fi/PxWeb/pxweb/fi/StatFin/StatFin__kony/statfin_kony_pxt_13fb.px/",
+                         target = "_blank",
+                         valueBox(
+                           
+                           "",
+                           "Lähde: Tilastokeskus. 13fe -- Konkurssit kuukausittain alueittain ja toimialoittain, 2003M01-2023M05"
+                           
+                         ) 
+                         
+                       )
+                       ))
                    )  
                  )
                ),
-               
-               ##### BANKRUPTCY BARPLOT id 13 #####
-               
-               tabPanel(
-                 title="Time Series (Bar)",
-                 value=bankruptcy_time_series_bar_url,
-                 
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates13", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries13", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries13", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions13", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions13", label="Select/Deselect all regions")),
-                   
-                   mainPanel(
-                     fluidRow(
-                       column(12,plotOutput("DecompTimeSeriesRegion")),
-                       column(12,plotOutput("DecompTimeSeriesIndustry")))
-                   ) 
-                 )
-               ),
-               
-               ##### BANKRUPTCY HISTOGRAM id 11 #####
-               
-               tabPanel(
-                 title="Histogram",
-                 value=bankruptcy_histogram_url,
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates11", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries11", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries11", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions11", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions11", label="Select/Deselect all regions"),
-                     
-                     textInput("toptrim11", "Select the fraction of largest firms to remove from the sample", value="0.015")),
-                   
-                   mainPanel(
-                     plotOutput("Histogram")
-                   )
-                   
-                 )
-               ),
-               
-               ##### BANKRUPTCY MAP id 14 #####
-               
-               tabPanel(
-                 title="Map",
-                 value=bankruptcy_map_url,
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates14", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries14", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries14", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions14", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions14", label="Select/Deselect all regions")),
-                   
-                   mainPanel(
-                     plotOutput("FinMapPlot")
-                   )   
-                 )
-               ),   
-               
-               ##### BANKRUPTCY PIECHARTS id 15 #####
-               
-               tabPanel(
-                 title ="Pie Chart",
-                 value=bankruptcy_pie_chart_url,
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates15", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries15", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries15", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions15", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions15", label="Select/Deselect all regions")),
-                   
-                   mainPanel(
-                     fluidRow(
-                       column(12,plotOutput("PieChartRegion")),
-                       column(12,plotOutput("PieChartIndustry")))
-                   )
-                 )
-               ),
-    ),
+    
     
     ##### MISCALLENIOUS SECTION #####
-    
-    navbarMenu(title= "Miscallenious", #id="tab2",
                
                ##### INVESTMENT CHANGE BARS id 31 #####
-               
+  
                tabPanel(
                  title="Investoinnit, muutos",
                  #value=miscallenious_investment_change_url,
                  
                  sidebarLayout(
                    sidebarPanel(
+                     
+                     actionButton("kuvankaappaus3", "Kuvankaappaus"),
+                     
+                     img(id="tag131", src="yritystag.jpg", style="cursor:pointer;"), 
+                     img(id="tag231", src="investointitag.jpg", style="cursor:pointer;"), 
                      radioButtons(inputId = "choice31", label="Valitse toimiala", 
                                   choices = investmentchoices31),
                      
                      checkboxGroupInput("quartals31", "Valitse vuosineljännekset:",
                                         quartalchoicevec,
                                         selected=quartalcharvec),
-                     
-                     actionLink("selectallquartals31", label="Valitse kaikki/Poista valinnat")),
+                     actionLink("selectallquartals31", label="Valitse kaikki/Poista valinnat"),
+                     checkboxGroupInput("graphchoice31", "Valitse esitysmuoto:",
+                     "Palkit", selected=NULL)),
                    
                    
                    mainPanel(
                      
                      fluidRow(
-                       column(12,plotlyOutput("InvestmentChange"), height="100%"))
+                       column(12,plotlyOutput("InvestmentChange"), height="100%")),
+                     fluidRow(
+                       valueBoxOutput("emptyvbox", width = 8), tags$a(
+                         
+                         href = "https://www.stat.fi/tup/kokeelliset-tilastot/yritysten-investoinnit/index.html",
+                         target = "_blank",
+                         valueBox(
+                           
+                           "",
+                           "Lähde: Tilastokeskus, Yritysten investoinnit"
+                         ) 
+                         
+                       ))
                    )
                  )
                ),
                
                ##### ENTRY AND EXIT BARS id 32 #####
-               
-               tabPanel(
-                 title="Entry ja Exit",
-                 value=miscallenious_entry_and_exit_url,
+  
+                tabPanel(
+                 title="Aloittaneet ja Lopettaneet Yritykset",
+                 #value=miscallenious_entry_and_exit_url,
                  
                  sidebarLayout(
                    sidebarPanel(
+                     
+                     actionButton("kuvankaappaus4", "Kuvankaappaus"),
+                     
+                     img(id="tag132", src="yritystag.jpg", style="cursor:pointer;"), 
+                     img(id="tag432", src="karttatag.jpg", style="cursor:pointer;"), 
                      
                      selectInput(inputId = "regionchoice32", label="Valitse maakunta:", choices = regionchoicevec32,
                                  selected = regionchoicevec32[1], multiple = FALSE, selectize = FALSE),
@@ -292,7 +286,8 @@ ui <- navbarPage(
                      actionLink("selectallyears32", label="Valitse kaikki/Poista valinnat"),
                      
                      checkboxGroupInput(inputId = "graphchoice32", "Muokkaa esitysmuotoa:",
-                                        c("Samassa kuvaajassa", "Näytä vuosineljännekset", "Näytä normalisoitu vaihtuvuus (kartta)"), 
+                                        c("Samassa kuvaajassa", "Näytä vuosineljännekset", "Näytä normalisoitu vaihtuvuus (kartta)", "Aikasarjana",
+                                          "Näytä yritysten määrän nettomuutos"), 
                                         selected = c("Näytä vuosineljännekset", "Näytä normalisoitu vaihtuvuus (kartta)")),
                      fluidRow(
                        column(12, plotlyOutput("yearlyentryexit1")),
@@ -302,24 +297,38 @@ ui <- navbarPage(
                    
                    mainPanel(
                      
-                     fluidRow(
-                       column(12,plotlyOutput("TotalEntry_TotalDouble")),
-                       column(12,plotlyOutput("TotalExit_PropDouble")),
-                       column(12,plotlyOutput("PropEntry")),
-                       column(12,plotlyOutput("PropExit")),
-                       column(12,plotlyOutput("turnoverIndudstry")))
+                    fluidRow(column(12,plotlyOutput("TotalEntry_TotalDouble"))),
+                    fluidRow(column(12,plotlyOutput("TotalExit_PropDouble"))),
+                    fluidRow(column(12,plotlyOutput("PropEntry"))),
+                    fluidRow(column(12,plotlyOutput("PropExit"))),
+                    fluidRow(column(12,plotlyOutput("turnoverIndustry"))),
+                    fluidRow(valueBoxOutput("emptyvbox2", width = 8), tags$a(
+                      
+                      href = "https://stat.fi/tilasto/aly",
+                      target = "_blank",
+                      valueBox(
+                        
+                        "",
+                        "Lähde: Tilastokeskus, Aloittaneet ja lopettaneet yritykset"
+                        
+                      ) 
+                      
+                    )))
                    )
-                 )
-               ),
+                 ),
                
                ##### SUBSIDY BARS id 33 #####
-               
+  
                tabPanel(
                  title="Yritystuet",
-                 value=miscallenious_subsidies_url,
+                 #value=miscallenious_subsidies_url,
                  
                  sidebarLayout(      
                    sidebarPanel(
+                     
+                     actionButton("kuvankaappaus5", "Kuvankaappaus"),
+                     
+                     img(id="tag133", src="yritystag.jpg", style="cursor:pointer;"), 
                      
                      selectInput(inputId = "industrychoice33", label="Valitse toimiala:", choices = TOLcharvec33,
                                  selected = TOLchoicevec33[1], multiple = FALSE, selectize = FALSE),
@@ -333,19 +342,33 @@ ui <- navbarPage(
                    
                    mainPanel(
                      
-                     fluidRow(
-                       column(12,plotlyOutput("subsidyPlot", height="100%")))
-                   )
+                     fluidRow(column(12,plotlyOutput("subsidyPlot", height="100%"))),
+                     fluidRow(valueBoxOutput("emptyvbox3", width = 8), tags$a(
+                       
+                       href = "https://stat.fi/tilasto/aly",
+                       target = "_blank",
+                       valueBox(
+                         
+                         "",
+                         "Lähde: Tilastokeskus, Aloittaneet ja lopettaneet yritykset"
+                         
+                       ) 
+                       
+                     )))
                  )
                ), 
                
                ##### REVENUE SERIES id 34 #####
-               
+  
                tabPanel(
                  title="Liikevaihtoennakot",
-                 value=miscallenious_revenue_url,
+                 #value=miscallenious_revenue_url,
                  sidebarLayout(      
                    sidebarPanel(
+                     
+                     actionButton("kuvankaappaus6", "Kuvankaappaus"),
+                     
+                     img(id="tag134", src="yritystag.jpg", style="cursor:pointer;"), 
                      
                      selectInput(inputId = "industrychoice34", label="Valitse toimiala:", choices = TOLchoicevec34,
                                  selected = TOLchoicevec34[1], multiple = FALSE, selectize = FALSE),
@@ -360,147 +383,130 @@ ui <- navbarPage(
                    mainPanel(
                      
                      fluidRow(
-                       column(12,plotlyOutput("revenuePlot", height="100%"))
-                   )
-                 )
+                       column(12,plotlyOutput("revenuePlot", height="100%"))),
+                     fluidRow(valueBoxOutput("emptyvbox4", width = 8), valueBoxOutput("Lähde34", width = 4)))
                )
-               )
-               
-    ),
+              ),
+    
     ##### PRODUCTIVITY SECTION #####
     
-    navbarMenu(title= "Productivity Estimates",
                
                ##### PRODUCTIVITY GRAPHPLOT id 22 #####
-               
-               tabPanel(
-                 title="Productivity Time Series (Graph)",
-                 #value=productivity_histogram_url,
-                 
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions", label="Select/Deselect all regions")),
-                   
-                   mainPanel(
-                     includeMarkdown("~/R/Shiny-demo-markdown-1.md")
-                   )  
-                 )
-               ),
-               
-               ##### PRODUCTIVITY BARPLOT id 23 #####
-               
-               tabPanel(
-                 title="Time Series (Bar)",
-                 value=productivity_time_series_graph_url,
-                 
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions", label="Select/Deselect all regions")),
-                   
-                   mainPanel(
-                     includeMarkdown("~/R/Shiny-demo-markdown-1.md")
-                   )
-                 )
-               ),
-               
-               ##### PRODUCTIVITY HISTOGRAM id 21 #####
-               
-               tabPanel(
-                 title="Histogram",
-                 value=productivity_time_series_bar_url,
-                 
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     
-                     actionLink("selectallregions", label="Select/Deselect all regions"),
-                     
-                     textInput("toptrim", "Select the fraction of largest firms to remove from the sample", value="0.015")),
-                   
-                   mainPanel(
-                     includeMarkdown("~/R/Shiny-demo-markdown-1.md")
-                   )
-                   
-                 )
-               ),
-               
-               ##### PRODUCTIVITY MAP id 24 #####
-               
-               tabPanel(
-                 title="Map",
-                 value=productivity_map_url,
-                 
-                 sidebarLayout(
-                   sidebarPanel(
-                     dateRangeInput("dates", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-                     
-                     checkboxGroupInput("industries", "Select Industries:",
-                                        industrychoicevec,
-                                        selected = industrycharvec),
-                     
-                     actionLink("selectallindustries1", label="Select/Deselect all industries"),
-                     
-                     checkboxGroupInput("regions", "Select Regions:",
-                                        regionchoicevec,
-                                        selected = regioncharvec),
-                     actionLink("selectallregions", label="Select/Deselect all regions")),
-                   
-                   mainPanel(
-                     includeMarkdown("~/R/Shiny-demo-markdown-1.md")))
-               )
-      ),
-               
-               tabPanel(title="info",
-               value="information_url",
-               
-               includeMarkdown("~/R/Shiny-demo-markdown-1.md")) 
-    )
   
+                 tabPanel(
+                   title="Productivity",
+                   
+                   sidebarLayout(
+                     sidebarPanel(
+                       
+                       actionButton("kuvankaappaus7", "Kuvankaappaus"),
+                       
+                       img(id="tag521", src="tuottavuustag.jpg", style="cursor:pointer;"), 
+                       
+                       selectInput("years4", "Valitse vuodet:",
+                                   choices = c("2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021"),
+                                   selected = "2013", multiple = FALSE, selectize = FALSE),
+                       
+                       checkboxGroupInput("industries", "Select Industries:",
+                                          industrychoicevec,
+                                          selected = industrycharvec),
+                       
+                       actionLink("selectallindustries", label="Select/Deselect all industries"),
+                       
+                       checkboxGroupInput("regions", "Select Regions:",
+                                          regionchoicevec,
+                                          selected = regioncharvec),
+                       actionLink("selectallregions", label="Select/Deselect all regions"),
+                     plotOutput("prodmap")),
+                     
+                     mainPanel(
+                       fluidRow(
+                         column(12, plotlyOutput("productivityTurnoverScatter")),
+                         column(12, plotlyOutput("productivityBankruptcyScatter"))
+                       )
+                     )
+                   )
+                 ),
+                 
+  
+    
+    ##### INFO PAGE #####
+               tabPanel(
+                 title="info",
+                 
+                 column(12, img(id="etusivulle6", src="etusivulle.jpg", style="cursor:pointer;"), useShinyjs()),
+                 includeMarkdown("Shiny-demo-markdown-info.markdown")
+                        )),
+  
+  ##### TAGGED PAGE #####
+  
+  ##### YRITYKSET #####
+  
+  navbarMenu(
+    title="Tagged",
+    
+    tabPanel(
+      title="#Yritykset",
+      
+      column(12, img(id="etusivulle1", src="etusivulle.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="investoinnitmuutos1", src="investointimuutos.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="aloittaneetjalopettaneet1", src="aloittaneetjalopettaneet.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="yritystuet1", src="yritystuet.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="liikevaihtoennakot1", src="liikevaihtoennakot.jpg", style="cursor:pointer;"), useShinyjs())),
+    
+    ##### INVESTOINNIT #####
+    
+    tabPanel(
+      title="#Investoinnit",
+      #value=,
+      
+      column(12, img(id="etusivulle2", src="etusivulle.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="investoinnitmuutos2", src="investointimuutos.jpg", style="cursor:pointer;"), useShinyjs())),
+    
+    ##### KONKURSSIT #####
+    
+    tabPanel(
+      title="#Konkurssit",
+      #value=,
+      
+      column(12, img(id="etusivulle3", src="etusivulle.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="konkurssit", src="Konkurssit1.jpg", style="cursor:pointer;"), useShinyjs())),
+    
+    ##### KARTAT #####
+    
+    tabPanel(
+      title="#Kartat",
+      #value=,
+      
+      column(12, img(id="etusivulle4", src="etusivulle.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="konkurssit2", src="Konkurssit1.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="aloittaneetjalopettaneet2", src="aloittaneetjalopettaneet.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="tuottavuuskartta1", src="tuottavuuskartta.jpg", style="cursor:pointer;"), useShinyjs())),
+    
+    ##### TUOTTAVUUDET #####
+    
+    tabPanel(
+      title="#Tuottavuudet",
+      #value=,
+      
+      column(12, img(id="etusivulle5", src="etusivulle.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="tuottavuussarja1", src="tuottavuussarja.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="tuottavuuspalkit1", src="tuottavuuspalkit.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="tuottavuushistogrammi1", src="tuottavuushistogrammi.jpg", style="cursor:pointer;"), useShinyjs()),
+      column(12, img(id="tuottavuuskartta2", src="tuottavuuskartta.jpg", style="cursor:pointer;"), useShinyjs())),
+    
+      )
+)
+
+  
+
 
 
 ##### SERVER #####
 
 server <- function(input, output, session) {
+  
+  ##### URL UPDATING #####
   
   observeEvent(input$navbarID, {
     currentHash <- sub("#", "", session$clientData$url_hash)
@@ -509,7 +515,7 @@ server <- function(input, output, session) {
       freezeReactiveValue(input, "navbarID")
       updateQueryString(pushQueryString, mode = "push", session)
     }
-  }, priority = 0)
+  }, priority = 1)
   
   observeEvent(session$clientData$url_hash, {
     currentHash <- sub("#", "", session$clientData$url_hash)
@@ -517,35 +523,90 @@ server <- function(input, output, session) {
       freezeReactiveValue(input, "navbarID")
       updateNavbarPage(session, "navbarID", selected = currentHash)
     }
-  }, priority = 1)
+  }, priority = 2)
   
-  shinyjs::onclick("image1", updateNavbarPage(session, inputId="navbarID", selected="information_url"))
-  shinyjs::onclick("image2", updateNavbarPage(session, inputId="navbarID", selected="Time Series (Graph)")) 
+  ##### IMAGE LINK BACKEND #####
+  
+  shinyjs::onclick("image1", updateNavbarPage(session, inputId="navbarID", selected="info"))
+  shinyjs::onclick("image2", updateNavbarPage(session, inputId="navbarID", selected="Konkurssit")) 
   shinyjs::onclick("image3", updateNavbarPage(session, inputId="navbarID", selected="Investoinnit, muutos"))
   shinyjs::onclick("image4", updateNavbarPage(session, inputId="navbarID", selected="Productivity Time Series (Graph)"))
   
-  ##### SELECT ALL HISTOGRAM #####
+  shinyjs::onclick("tag131", updateNavbarPage(session, inputId="navbarID", selected="#Yritykset"))
+  shinyjs::onclick("tag132", updateNavbarPage(session, inputId="navbarID", selected="#Yritykset"))
+  shinyjs::onclick("tag133", updateNavbarPage(session, inputId="navbarID", selected="#Yritykset"))
+  shinyjs::onclick("tag134", updateNavbarPage(session, inputId="navbarID", selected="#Yritykset"))
+  shinyjs::onclick("tag231", updateNavbarPage(session, inputId="navbarID", selected="#Investoinnit"))
+  shinyjs::onclick("tag432", updateNavbarPage(session, inputId="navbarID", selected="#Kartat"))
   
-  observe({
-    if(input$selectallindustries11 == 0)  {return(NULL)}
-    else if (input$selectallindustries11%%2==0) {
-      updateCheckboxGroupInput(session,"industries11", "Select Industries:",choices=industrychoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"industries11", "Select Industries:",choices=industrychoicevec,selected=industrychoicevec)
-    }
+  shinyjs::onclick("tag311", updateNavbarPage(session, inputId="navbarID", selected="#Konkurssit"))
+  shinyjs::onclick("tag312", updateNavbarPage(session, inputId="navbarID", selected="#Konkurssit"))
+  shinyjs::onclick("tag313", updateNavbarPage(session, inputId="navbarID", selected="#Konkurssit"))
+  shinyjs::onclick("tag314", updateNavbarPage(session, inputId="navbarID", selected="#Konkurssit"))
+  shinyjs::onclick("tag315", updateNavbarPage(session, inputId="navbarID", selected="#Konkurssit"))
+  shinyjs::onclick("tag414", updateNavbarPage(session, inputId="navbarID", selected="#Kartat"))
+  
+  shinyjs::onclick("tag521", updateNavbarPage(session, inputId="navbarID", selected="#Tuottavuudet"))
+  shinyjs::onclick("tag522", updateNavbarPage(session, inputId="navbarID", selected="#Tuottavuudet"))
+  shinyjs::onclick("tag523", updateNavbarPage(session, inputId="navbarID", selected="#Tuottavuudet"))
+  shinyjs::onclick("tag524", updateNavbarPage(session, inputId="navbarID", selected="#Tuottavuudet"))
+  shinyjs::onclick("tag424", updateNavbarPage(session, inputId="navbarID", selected="#Kartat"))
+  
+  shinyjs::onclick("investoinnitmuutos1", updateNavbarPage(session, inputId="navbarID", selected="Investoinnit, muutos"))
+  shinyjs::onclick("aloittaneetjalopettaneet1", updateNavbarPage(session, inputId="navbarID", selected="Aloittaneet ja Lopettaneet Yritykset"))
+  shinyjs::onclick("yritystuet1", updateNavbarPage(session, inputId="navbarID", selected="Yritystuet"))
+  shinyjs::onclick("liikevaihtoennakot1", updateNavbarPage(session, inputId="navbarID", selected="Liikevaihtoennakot"))
+  
+  shinyjs::onclick("investoinnitmuutos2", updateNavbarPage(session, inputId="navbarID", selected="Investoinnit, muutos"))
+  
+  shinyjs::onclick("konkurssikartta1", updateNavbarPage(session, inputId="navbarID", selected="Konkurssit"))
+  shinyjs::onclick("aloittaneetjalopettaneet2", updateNavbarPage(session, inputId="navbarID", selected="Aloittaneet ja Lopettaneet Yritykset"))
+  shinyjs::onclick("tuottavuuskartta1", updateNavbarPage(session, inputId="navbarID", selected="Productivity Map"))
+  
+  shinyjs::onclick("konkurssit", updateNavbarPage(session, inputId="navbarID", selected="Bankrupty Time Series (Graph)"))
+  
+  shinyjs::onclick("tuottavuussarja1", updateNavbarPage(session, inputId="navbarID", selected="Productivity Time Series (Graph)"))
+  shinyjs::onclick("tuottavuuspalkit1", updateNavbarPage(session, inputId="navbarID", selected="Productivity Time Series (Bar)"))
+  shinyjs::onclick("tuottavuushistogrammi1", updateNavbarPage(session, inputId="navbarID", selected="Productivity Histogram"))
+  shinyjs::onclick("tuottavuuskartta2", updateNavbarPage(session, inputId="navbarID", selected="Productivity Map"))
+    
+  shinyjs::onclick("initialtag1", updateNavbarPage(session, inputId="navbarID", selected="#Yritykset"))
+  shinyjs::onclick("initialtag2", updateNavbarPage(session, inputId="navbarID", selected="#Investoinnit"))
+  shinyjs::onclick("initialtag3", updateNavbarPage(session, inputId="navbarID", selected="#Konkurssit"))
+  shinyjs::onclick("initialtag4", updateNavbarPage(session, inputId="navbarID", selected="#Kartat"))
+  shinyjs::onclick("initialtag5", updateNavbarPage(session, inputId="navbarID", selected="#Tuottavuudet"))
+  
+  shinyjs::onclick("etusivulle1", updateNavbarPage(session, inputId="navbarID", selected="Yritysryhmän etusivu"))
+  shinyjs::onclick("etusivulle2", updateNavbarPage(session, inputId="navbarID", selected="Yritysryhmän etusivu"))
+  shinyjs::onclick("etusivulle3", updateNavbarPage(session, inputId="navbarID", selected="Yritysryhmän etusivu"))
+  shinyjs::onclick("etusivulle4", updateNavbarPage(session, inputId="navbarID", selected="Yritysryhmän etusivu"))
+  shinyjs::onclick("etusivulle5", updateNavbarPage(session, inputId="navbarID", selected="Yritysryhmän etusivu"))
+  shinyjs::onclick("etusivulle6", updateNavbarPage(session, inputId="navbarID", selected="Yritysryhmän etusivu"))
+  
+  ##### SCREENSHOT #####
+    
+  observeEvent(input$kuvankaappaus1 | input$kuvankaappaus2 | input$kuvankaappaus3 | input$kuvankaappaus4 | input$kuvankaappaus5 |
+               input$kuvankaappaus6 | input$kuvankaappaus7, {
+    
+          if (input$kuvankaappaus1 == 0 && input$kuvankaappaus2 == 0 && input$kuvankaappaus3 == 0 && input$kuvankaappaus4 == 0 && input$kuvankaappaus5 == 0 &&
+              input$kuvankaappaus6 == 0 && input$kuvankaappaus7 == 0) {
+            
+            return
+            
+          } else {
+            
+            screenshot(
+              scale=1,
+              filename="Shiny_screenshot")
+            
+          }   
     
   })
   
-  observe({
-    if(input$selectallregions11 == 0) {return(NULL)}
-    else if (input$selectallregions11%%2==0) {
-      updateCheckboxGroupInput(session,"regions11", "Select Regions:",choices=regionchoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"regions11", "Select Regions:",choices=regionchoicevec,selected=regionchoicevec)
-    }
-  })
+
+  
+  ##### SELECT ALL HISTOGRAM ##### 
+
   
   ##### SELECT ALL GRAPHPLOT #####
   
@@ -572,72 +633,7 @@ server <- function(input, output, session) {
   
   ##### SELECT ALL BARPLOT #####
   
-  observe({
-    if(input$selectallindustries13 == 0)  {return(NULL)}
-    else if (input$selectallindustries13%%2==0) {
-      updateCheckboxGroupInput(session,"industries13", "Select Industries:",choices=industrychoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"industries13", "Select Industries:",choices=industrychoicevec,selected=industrychoicevec)
-    }
-    
-  })
-  
-  observe({
-    if(input$selectallregions13 == 0) {return(NULL)}
-    else if (input$selectallregions13%%2==0) {
-      updateCheckboxGroupInput(session,"regions13", "Select Regions:",choices=regionchoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"regions13", "Select Regions:",choices=regionchoicevec,selected=regionchoicevec)
-    }
-  })
-  
-  ##### SELECT ALL MAP #####
-  
-  observe({
-    if(input$selectallindustries14 == 0)  {return(NULL)}
-    else if (input$selectallindustries14%%2==0) {
-      updateCheckboxGroupInput(session,"industries14", "Select Industries:",choices=industrychoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"industries14", "Select Industries:",choices=industrychoicevec,selected=industrychoicevec)
-    }
-    
-  })
-  
-  observe({
-    if(input$selectallregions14 == 0) {return(NULL)}
-    else if (input$selectallregions14%%2==0) {
-      updateCheckboxGroupInput(session,"regions14", "Select Regions:",choices=regionchoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"regions14", "Select Regions:",choices=regionchoicevec,selected=regionchoicevec)
-    }
-  })
-  
-  ##### SELECT ALL PIECHARTS #####
-  
-  observe({
-    if(input$selectallindustries15 == 0)  {return(NULL)}
-    else if (input$selectallindustries15%%2==0) {
-      updateCheckboxGroupInput(session,"industries15", "Select Industries:",choices=industrychoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"industries15", "Select Industries:",choices=industrychoicevec,selected=industrychoicevec)
-    }
-    
-  })
-  
-  observe({
-    if(input$selectallregions15 == 0) {return(NULL)}
-    else if (input$selectallregions15%%2==0) {
-      updateCheckboxGroupInput(session,"regions15", "Select Regions:",choices=regionchoicevec)
-    }
-    else  {
-      updateCheckboxGroupInput(session,"regions15", "Select Regions:",choices=regionchoicevec,selected=regionchoicevec)
-    }
-  })
+
   
   ##### SELECT ALL QUARTALS #####
   
@@ -676,43 +672,106 @@ server <- function(input, output, session) {
     
   })
   
-  data11 <- reactive ({
+  data121 <- reactive ({
     
-    years <- fetchyears(x1=input$dates11[1], x2=input$dates11[2], x3=input$industries11, x4=input$regions11)
-    industries <- fetchindustries(x1=input$dates11[1], x2=input$dates11[2], x3=input$industries11, x4=input$regions11)
-    regions <- fetchregions(x1=input$dates11[1], x2=input$dates11[2], x3=input$industries11, x4=input$regions11)
-    assets <- fetchassets(x1=input$dates11[1], x2=input$dates11[2], x3=input$industries11, x4=input$regions11)
-    data <- data.frame(year = years , industries=industries, regions = regions, assets = assets)
+    BRCfin <- months_to_quartals(BRCfin)
     
-  })
-  
-  data12 <- reactive ({
+    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "KOKO MAA")& (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
     
-    years <- fetchyears(x1=input$dates12[1], x2=input$dates12[2], x3=input$industries12, x4=input$regions12)
-    industries <- fetchindustries(x1=input$dates12[1], x2=input$dates12[2], x3=input$industries12, x4=input$regions12)
-    regions <- fetchregions(x1=input$dates12[1], x2=input$dates12[2], x3=input$industries12, x4=input$regions12)
-    assets <- fetchassets(x1=input$dates12[1], x2=input$dates12[2], x3=input$industries12, x4=input$regions12)
-    data <- data.frame(year = years , industries=industries, regions = regions, assets = assets)
+    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    
+    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    BRCfin <- aggregate(nobs~time, data=BRCfin, FUN=sum)
+    
+    return(BRCfin)
     
   })
   
-  data13 <- reactive ({
+  data122 <- reactive ({
     
-    years <- fetchyears(x1=input$dates13[1], x2=input$dates13[2], x3=input$industries13, x4=input$regions13)
-    industries <- fetchindustries(x1=input$dates13[1], x2=input$dates13[2], x3=input$industries13, x4=input$regions13)
-    regions <- fetchregions(x1=input$dates13[1], x2=input$dates13[2], x3=input$industries13, x4=input$regions13)
-    assets <- fetchassets(x1=input$dates13[1], x2=input$dates13[2], x3=input$industries13, x4=input$regions13)
-    data <- data.frame(year = years , industries=industries, regions = regions, assets = assets)
+    BRCfin <- months_to_quartals(BRCfin)
+    
+    BRCfin <- BRCfin[(BRCfin$maakunta != "KOKO MAA") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    
+    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    
+    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    
+    return(BRCfin)
+    
+  })
+  
+  data123 <- reactive ({
+    
+    BRCfin <- months_to_quartals(BRCfin)
+    
+    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    
+    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    
+    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    
+    return(BRCfin)
+    
+  })
+  
+  data124 <- reactive ({
+    
+    BRCfin <- month_wrangler(BRCfin)
+    
+    BRCfin <- BRCfin[(BRCfin$maakunta != "KOKO MAA") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    
+    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    
+    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    
+    BRCfin <- aggregate(nobs~time, data=BRCfin, FUN=sum)
+    
+    return(BRCfin)
+    
+  })
+  
+  data125 <- reactive ({
+    
+    BRCfin <- month_wrangler(BRCfin)
+    
+    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    
+    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    
+    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    
+    BRCfin <- aggregate(nobs~time, data=BRCfin, FUN=sum)
+    
+    return(BRCfin)
     
   })
   
   data14 <- reactive ({
     
-    years <- fetchyears(x1=input$dates14[1], x2=input$dates14[2], x3=input$industries14, x4=input$regions14)
-    industries <- fetchindustries(x1=input$dates14[1], x2=input$dates14[2], x3=input$industries14, x4=input$regions14)
-    regions <- fetchregions(x1=input$dates14[1], x2=input$dates14[2], x3=input$industries14, x4=input$regions14)
-    assets <- fetchassets(x1=input$dates14[1], x2=input$dates14[2], x3=input$industries14, x4=input$regions14)
-    data <- data.frame(year = years , industries=industries, regions = regions, assets = assets)
+    BRCfin <- month_wrangler(BRCfin)
+    
+    BRCfin <- join(BRCfin, BRCfinsubs, by = "maakunta")
+    
+    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "KOKO MAA")& (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    
+    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    
+    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    
+    BRCfin <- aggregate(nobs~maakunta+nutsname, data=BRCfin, FUN=sum)
+    
+    for (i in 1:length(BRCfinzeros)) {
+      
+      if (is.element(BRCfinzeros$maakunta[i], BRCfin$maakunta) == FALSE) {
+        
+        BRCfin <- rbind(BRCfin, BRCfinzeros[i,])
+        
+      }
+      
+    }
+    
+    return(BRCfin)
     
   })
   
@@ -739,9 +798,9 @@ server <- function(input, output, session) {
     
     colnames(data) <- namerow
     
-    data <- data.frame(data, vuosi = as.numeric(substr(data$vuosineljännes, 1, 4)),
-                       neljännes = as.character(substr(data$vuosineljännes, 5, 6)))
-    
+    data <- data.frame(data, vuosi = as.character(substr(data$vuosineljännes, 1, 4)),
+                       neljännes = as.factor(substr(data$vuosineljännes, 5, 6)))
+
     colnames(data) <- c("vuosineljännes", investmentchoices31, "vuosi", "neljännes")
     
     relevant <- data[colnames(data) == input$choice31]
@@ -781,8 +840,8 @@ server <- function(input, output, session) {
       }
     }
     
-    entryexitdata2 <- data.frame(vuosineljännes = entryexitdata2$vuosineljännes, luokitus = entryexitdata2$luokitus, nentry = entryexitdata2$nentry, 
-                                 nexit = entryexitdata2$nexit, ntotal = entryexitdata2$ntotal)
+    entryexitdata2 <- data.frame(vuosineljännes = entryexitdata2$vuosineljännes, luokitus = entryexitdata2$luokitus, aloittaneet = entryexitdata2$aloittaneet, 
+                                 lopettaneet = entryexitdata2$lopettaneet, ntotal = entryexitdata2$ntotal)
     
     entryexitdata2 <- entryexitdata2[-c(1),] 
     
@@ -793,6 +852,13 @@ server <- function(input, output, session) {
     data1 <- entryexitdata2[entryexitdata2$luokitus == luokitusnimi,]
     data1 <- data1[is.element(as.character(substr(data1$vuosineljännes, 1, 4)), input$years32),]
     
+    data1$aloittaneet <- as.numeric(data1$aloittaneet)
+    data1$lopettaneet <- as.numeric(data1$lopettaneet)
+    data1$ntotal <- as.numeric(data1$ntotal)
+    
+    data1$vuosi <- factor(as.character(substr(data1$vuosineljännes, 1, 4)))
+    
+    return(data1)
     
   })
   
@@ -803,7 +869,7 @@ server <- function(input, output, session) {
     turnoverdata$kategoria <- zoo::na.locf(turnoverdata$kategoria)
     turnoverdata <- turnoverdata[turnoverdata$luokitus == input$industrychoice32,]
     turnoverdata <- turnoverdata[(! grepl("MA1", turnoverdata$kategoria))&(!grepl("MA2", turnoverdata$kategoria)),]
-    turnoverdata$turnoverrate <- (as.numeric(turnoverdata$nentry))/(as.numeric(turnoverdata$ntotal)) + (as.numeric(turnoverdata$nexit))/(as.numeric(turnoverdata$ntotal))
+    turnoverdata$turnoverrate <- (as.numeric(turnoverdata$aloittaneet))/(as.numeric(turnoverdata$ntotal)) + (as.numeric(turnoverdata$lopettaneet))/(as.numeric(turnoverdata$ntotal))
     turnoverregional <- aggregate(turnoverrate~kategoria, data=turnoverdata, FUN=mean)
     
     if ("Näytä normalisoitu vaihtuvuus (kartta)" %in% input$graphchoice32) {
@@ -836,10 +902,10 @@ server <- function(input, output, session) {
       
     }
     
-    handoutdata <- data.frame(vuosineljännes=handoutdata$vuosineljännes, TOL = handoutdata$TOL, 
-                              kokoluokka = handoutdata$kokoluokka, vuosi = as.numeric(substr(handoutdata$vuosineljännes, 1, 4)),
-                              neljännes = as.character(substr(handoutdata$vuosineljännes, 5, 6)),
-                              num = newcolumn)
+    handoutdata <- data.frame(num = newcolumn, vuosineljännes=handoutdata$vuosineljännes, TOL = handoutdata$TOL, 
+                              kokoluokka = factor(handoutdata$kokoluokka), vuosi = as.numeric(substr(handoutdata$vuosineljännes, 1, 4)),
+                              neljännes = as.character(substr(handoutdata$vuosineljännes, 5, 6)))
+                              
     
     handoutdata <- handoutdata[handoutdata$TOL == as.character(input$industrychoice33),]
     
@@ -847,9 +913,7 @@ server <- function(input, output, session) {
   
   data34 <- reactive({
     
-    data <- revenuedata
-    
-    print(revenuedata)
+    data <- as.data.frame(revenuedata)
     
     if ((input$industrychoice34 != "Kaikki") & (input$variablechoice34 != "Kaikki")) {
       colnums <- which((grepl(input$industrychoice34,namerow)) & (grepl(input$variablechoice34,namerow)))
@@ -869,6 +933,16 @@ server <- function(input, output, session) {
       data <- data
     }
     
+    colnames(data) <- gsub("Trendisarja ", "Trendisarja_", colnames(data))
+    colnames(data) <- gsub("Alkuperäinen indeksisarja ", "Alkuperänen_indeksisarja_", colnames(data))
+    colnames(data) <- gsub("Työpäiväkorjattu indeksisarja ", "Työpäiväkorjattu_indeksisarja_", colnames(data))
+    colnames(data) <- gsub("Kausitasoitettu indeksisarja ", "Kausitasoitettu_indeksisarja_", colnames(data))
+    
+    colnames(data) <- gsub("(F)", "Rakentaminen", colnames(data))
+    colnames(data) <- gsub("(B-E)", "Koko_teollisuus", colnames(data))
+    colnames(data) <- gsub("(G)", "Koko_kauppa", colnames(data))
+    colnames(data) <- gsub("(HIJLMNRS)", "Muut_palvelut", colnames(data))
+    
     return(data)
     
   })
@@ -876,12 +950,60 @@ server <- function(input, output, session) {
   data35 <- reactive({
     
     turnoverdata <- entryexitdata
+    
+    turnoverdata$luokitus[turnoverdata$luokitus == "T Kotitalouksien toiminta työnantajina; kotitalouksien eriyttämätön toiminta tavaroiden ja palvelujen tuottamiseksi omaan käyttöön (97-98)"] <- "T Kotitalouksien toiminta työnantajina (97-98)"
     turnoverdata <- turnoverdata[-c(1:2),]
     turnoverdata$kategoria <- zoo::na.locf(turnoverdata$kategoria)
     turnoverdata <- turnoverdata[(grepl(input$regionchoice32, turnoverdata$kategoria)),]
-    turnoverdata$turnoverrate <- (as.numeric(turnoverdata$nentry))/(as.numeric(turnoverdata$ntotal)) + (as.numeric(turnoverdata$nexit))/(as.numeric(turnoverdata$ntotal))
+    turnoverdata$turnoverrate <- (as.numeric(turnoverdata$aloittaneet))/(as.numeric(turnoverdata$ntotal)) + (as.numeric(turnoverdata$lopettaneet))/(as.numeric(turnoverdata$ntotal))
     turnoverindustry <- aggregate(turnoverrate~luokitus, data=turnoverdata, FUN=mean)
     turnoverindustrygroup <- turnoverindustry[is.na(as.numeric(substring(turnoverindustry$luokitus, 1, 2))),]
+    
+    
+  })
+  
+  data4 <- reactive({
+    
+    data <- aggregateproddf
+    data <- data[as.numeric(data$vuosi) == as.numeric(input$years4),]
+    data <- data[,c(1, 2)]
+    data <- join(data,BRCfinsubs2,by="maakunta")
+    
+  })
+  
+  data41 <- reactive({
+    
+    data <- entryexitdata[-c(1,2),]
+    data$vuosineljännes <- zoo::na.locf(data$vuosineljännes)
+    data$kategoria <- zoo::na.locf(data$kategoria)
+    data$ntotal <- as.numeric(data$ntotal)
+    
+    data$vuosi <- as.numeric(substr(data$vuosineljännes, 1, 4))
+    data <- data[(data$vuosi==input$years4),]
+    
+    data <- data[data$luokitus == "Yhteensä",]
+    
+    data <- data[,c(2, 6, 7)]
+    
+    data <- aggregate(ntotal~kategoria, data=data, FUN=mean, na.rm=TRUE)
+    
+    colnames(data) <- c("maakunta", "yrityskanta")
+    
+    return(data)
+    
+  })
+  
+  data42 <- reactive({
+    
+    data <- BRCfin
+    
+    data$year <- as.numeric(substr(data$date, 1, 4))
+    data <- data[data$TOL=="Yhteensä",]
+    data <- data[data$year==input$years4,]
+    data <- aggregate(nobs~maakunta, data=data, FUN=sum)
+    #data <- data[,c(2, 3, 4)]
+    
+    return(data)
     
   })
   
@@ -936,123 +1058,69 @@ server <- function(input, output, session) {
   
     ##### BANKRUPTCY GRAPHPLOTS #####
       
-    output$timeSeries <- renderPlot({
+    output$timeSeries <- renderPlotly({
+      
+      if (length(input$graphchoice12) == 0) {
         
-      data <- data12()
+        h <- timeseries(data121(), c("Konkurssien määrä"), TRUE, "2003-01-01", randcolor())
         
-        h <- hist(data$year, breaks=diffyears12(), plot=TRUE)
-        plot(x=h$mids, y=h$counts, type="o", col="darkblue", pch=16, xaxt="n", lwd=2, cex=1, ylab ="N.o. bankruptcies", xlab="year", 
-             main = "N.o. bankruptcies, time series")
-        axis(1, xaxp=c(1980,2020,40), las=2)
+      } else if (length(input$graphchoice12) > 0) {
+        
+        plot <- ggplot(data121(), aes(x = time, y = nobs)) + geom_bar(stat="identity") + ylab("ylabtxt") + xlab("Vuosi")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors))
+        plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle("Konkurssien määrä")
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
+        
+        plot <- ggplotly(plot)
+        
+      }
         
       })
   
-    output$DecompTimeSeriesIndustry <- renderPlot({
+    output$DecompTimeSeriesRegion <- renderPlotly({
       
-      data <- data13()
-      
-      ggplot(data.frame(industry=data$industries, region=data$regions, year=data$year),
-             aes(x=year, fill=industry), labs(y="N.o. bankrupcties", x="year")) +
-        geom_histogram(bins=max(data$year)-min(data$year))
+      if (length(input$graphchoice12) == 0) {
+        
+        return(bankruptcygraphs(c("Konkurssit, aikasarja, toimialoittain"), FALSE, "maakunta"))
+        
+      } else if (length(input$graphchoice12) > 0) {
+        
+        return(bankruptcygraphs(c("Konkurssit, aikasarja, maakunnittain"), TRUE, "maakunta"))
+        
+      }
       
     })
     
-    output$DecompTimeSeriesRegion <- renderPlot ({
+    output$DecompTimeSeriesIndustry <- renderPlotly ({
       
-      data <- data13()
       
-      namesvec <- numeric(length(data$year))
-      
-      data <-data.frame(industry=data$industries, region=data$region, year=data$year, names=namesvec)
-      
-      for (i in 1:length(data$region)) {
-        for (k in 1:length(regionlatnameconversion$name)) {
-          if (data$region[i] == regionlatnameconversion$nutsname[k]) {
-            data$names[i] <- regionlatnameconversion$name[k]
-          }
-        }
+      if (length(input$graphchoice12) == 0) {
+        
+        return(bankruptcygraphs(c("Konkurssit, aikasarja, maakunnittain"), FALSE, "TOL"))
+        
+      } else if (length(input$graphchoice12) > 0) {
+        
+        return(bankruptcygraphs(c("Konkurssit, aikasarja, toimialoittain"), TRUE, "TOL"))
+        
       }
-      
-      ggplot(data, aes(x=year, fill=names), labs(y="N.o. bankrupcties", x="year")) +
-        geom_histogram(bins=max(data$year)-min(data$year))
-      
-    })
-  
-    ##### BANKRUPTCY BARPLOTS #####
-    
-    output$MatPlotIndustry <- renderPlot({
-      
-      fuel <- data12()
-      
-      hmatind <- matrix(0, diffyears12(), length(industrycharvec))
-      hmatind <- as.data.frame((hmatind))
-      
-      for (i in 1:length(industrycharvec)) {
-        for (k in min(fuel$year):max(fuel$year)) {
-          hmatind[k-min(fuel$year),i] <- length(fuel$year[fuel$year == k & as.character(fuel$industries) == industrynamevec[i]])
-        }
-      }
-      
-      rownames(hmatind) <- c((min(fuel$year)+1):max(fuel$year))
-      colnames(hmatind) <- industrycharvec
-      
-      for (i in 1:ncol(hmatind)) {
-        if (sum(hmatind[, industrycharvec[i]]) == 0) {
-          hmatind[, industrycharvec[i]] <- rep(NA, length(hmatind[,1]))
-        }
-      }
-      
-      matplot(hmatind, type="l", lty="solid", lwd="2", main="No. bankruptcies, decomposed by industry" ,xlab="year", ylab="N.o. bankruptcies")
       
     })
     
-    output$MatPlotRegion <- renderPlot({
-      
-      fuel <- data12()
-      
-      hmatreg <- matrix(0, diffyears12(), length(regioncharvec))
-      hmatreg <- as.data.frame((hmatreg))
-      
-      for (i in 1:length(regioncharvec)) {
-        for (k in min(fuel$year):max(fuel$year)) {
-          hmatreg[k-min(fuel$year),i] <- length(fuel$year[fuel$year == k & as.character(fuel$regions) == regioncharvec[i]])
-        }
-      }
-      
-      rownames(hmatreg) <- c((min(fuel$year)+1):max(fuel$year))
-      colnames(hmatreg) <- regioncharvec
-      
-      for (i in 1:ncol(hmatreg)) {
-        if (sum(hmatreg[, regioncharvec[i]]) == 0) {
-          hmatreg[, regioncharvec[i]] <- rep(NA, length(hmatreg[,1]))
-        }
-      }
-      
-      matplot(hmatreg, type="l", lty="solid", lwd="2", main="No. bankruptcies, decomposed by region", xlab="year", ylab="N.o. bankruptcies")
-      
-    })
-  
-    ##### BANKRUPTCY MAPS #####
+    ##### MAPS #####
       
     output$FinMapPlot <-renderPlot({
       
-      finrelevant <- data14()$regions
-      finrelevantnobsvec <- numeric(length(mydata$id))
+      finrelevant <- data14()
       
-      for (i in 1:length(mydata$id)) {
-        finrelevantnobsvec[i] <- length(finrelevant[finrelevant == mydata$nutsname[i]])
-      }
+      mapdf <- join(mydata, finrelevant, by = "nutsname")
       
-      finrelevantnobsvec <- data.frame(nobs=finrelevantnobsvec, id=mydata$id)
-      
-      print(finrelevantnobsvec)
-      
-      mapplot <- map(finrelevantnobsvec, "nobs", "Map of bankruptcies", "This is a map of simulated bankruptcies", "id", 2)
+      mapplot <- map(mapdf, "nobs", "Konkurssit maakuntatasolla", "Valitut toimialat, valittu aikaväli", "id", 2, 8)
       
       plot(mapplot)
       
       
-    }, height=1000, width=800)
+    }, height=850, width=650)
     
     output$turnoverMap <- renderPlot({
       
@@ -1060,59 +1128,24 @@ server <- function(input, output, session) {
       
       colnames(turnoverregional) <- c("name", "turnoverrate", "normalized", "nutsname")
       
-      print(mydata)
+      #print(mydata)
       
-      print(turnoverregional)
+      #print(turnoverregional)
       
       mapdf <- join(mydata, turnoverregional, by = "nutsname")
       
-      print(mapdf)
+      #print(mapdf)
       
-      mapplot <- map(mapdf, "normalized", "Yrityskannan Vaihtuvuus", "", "id", 4)
+      if ("Näytä normalisoitu vaihtuvuus (kartta)" %in% input$graphchoice32) {
+        mapplot <- map(mapdf, "normalized", "Yrityskannan Vaihtuvuus", "Normalisoitu koko maan keskiarvon suhteen", "id", 4, 6)
+      } else {
+        mapplot <- map(mapdf, "normalized", "Yrityskannan Vaihtuvuus", "", "id", 4, 6)
+  
+      }
       
       plot(mapplot)
       
-    }, height=850, width = 650) 
-  
-    ##### BANKRUPTCY PIECHARTS #####
-  
-    output$PieChartRegion <- renderPlot({
-      
-      regions <- data15()$regions
-      finrelevantnobsvecreg <- numeric(length(mydata$id))
-      for (i in 1:length(mydata$id)) {
-        finrelevantnobsvecreg[i] <- length(regions[regions == mydata$nutsname[i]])
-      }
-      
-      datareg <- data.frame(nobsreg = finrelevantnobsvecreg, id = mydata$id)
-      
-      datareg <- join(datareg, regionlatnameconversion, by="id")
-      
-      datareg <- na.omit(datareg)
-      
-      plotreg <- ggplot(datareg, aes(x="", y=nobsreg,fill=name)) + geom_bar(width = 1, stat = "identity")
-      piereg <- plotreg + coord_polar("y", start=0)
-      plot(piereg)
-      
-    })
-      
-    output$PieChartIndustry <- renderPlot({
-      
-      industries <- data15()$industries
-      finrelevantnobsvecind <- numeric(length(industrynamevec))
-      for (i in 1:length(industrynamevec)) {
-        finrelevantnobsvecind[i] <- length(industries[industries == industrynamevec[i]])
-      }
-      
-      dataind <- data.frame(nobsind = finrelevantnobsvecind, names = industrynamevec)
-      
-      dataind <- na.omit(dataind)
-      
-      plotind <- ggplot(dataind, aes(x="", y=nobsind,fill=names)) + geom_bar(width = 1, stat = "identity")
-      pieind <- plotind + coord_polar("y", start=0)
-      plot(pieind)
-      
-    })
+    }, height=850, width = 650)
     
     ##### INVESTMENT CHANGE BARS #####
     
@@ -1120,68 +1153,138 @@ server <- function(input, output, session) {
       
       data <- data31()
       
-      ggplot(data, aes(x = factor(neljännes), y = as.double(data[,2]), fill = as.character(vuosi), colour = vuosineljännes)) + geom_bar(position = "dodge", stat="identity", colour="black") + ylab("Vuosimuutos, prosenttia") + xlab("Vuosineljännes") + scale_fill_manual(values=DHcolors3)
+      colnames(data) <- c("vuosineljännes","vuosimuutos", "vuosi", "neljännes")
       
-      print(ggplotly())
+      data[,2] <- as.numeric(data[,2])
+      
+      if (length(input$graphchoice31)==0) {
+        data <- quartal_wrangler(data)
+        
+        plot <- timeseries(data[,c(1,2)], "Investointien muutos (vrt. edellisen vuoden vastaavaan kvartaaliin)", FALSE, "2018-01-01", DHcolors)
+      } else if (is.element("Aikasarjana", input$graphchoice31)) {
+        plot <- ggplot(data, aes(x = neljännes, y = vuosimuutos, fill = vuosi))
+        plot <- plot + geom_bar(position = "dodge", stat="identity")
+        plot <- plot + ylab("Vuosimuutos, prosenttia") + xlab("Vuosineljännes")
+        plot <- plot + scale_fill_manual(values=colorsample(5))
+        
+      }
       
     })
     
-    ##### FIRM ENTRY AND EXIT BARS #####
+    ##### FIRM ENTRY AND EXIT #####
     
     output$TotalEntry_TotalDouble <- renderPlotly({
       
-      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, FALSE, FALSE, FALSE)
+      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32)) 
+          & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, FALSE, FALSE, FALSE, "Aloittaneet yritykset, lkm, vuosineljänneksittäin", FALSE)
         ggplotly()
-      } else if (is.element("Samassa kuvaajassa", input$graphchoice32)& (is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, TRUE, FALSE, FALSE)
+      } else if (is.element("Samassa kuvaajassa", input$graphchoice32)& (is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, TRUE, FALSE, FALSE, "Aloittaneet ja lopettaneet yritykset, lkm, vuosineljänneksittäin", FALSE)
         ggplotly()
-      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, FALSE, TRUE, FALSE)
+      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, FALSE, TRUE, FALSE, "Aloittaneet yritykset, lkm, vuosittain", FALSE)
         ggplotly()
-      } else if ((is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, TRUE, TRUE, FALSE)
+      } else if ((is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, TRUE, TRUE, FALSE, "Aloittaneet ja lopettaneet yritykset, lkm, vuosittain", FALSE)
         ggplotly()
+      } else if (is.element("Aikasarjana", input$graphchoice32) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, data32()$aloittaneet, data32()$lopettaneet)), "Aloittaneet ja lopettaneet yritykset, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors)
+      } else if (is.element("Aikasarjana", input$graphchoice32) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        yearlyentry <- aggregate(aloittaneet~vuosi, data=data32(), FUN=sum)
+        yearlyexit <- aggregate(lopettaneet~vuosi, data=data32(), FUN=sum)
+        years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
+        plot <- timeseries(quartal_wrangler(data.frame(years, aloittaneet = yearlyentry, lopettaneet = yearlyexit)), "Aloittaneet ja lopettaneet yritykset, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors)
+      } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (!is.element("Aikasarjana", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, FALSE, "Yritysten määrän nettomuutos, lukumäärä", TRUE)
+      } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (is.element("Aikasarjana", input$graphchoice32))) {
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet - data32()$lopettaneet))), "Yritysten määrän nettomuutos, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors)
+      } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (is.element("Aikasarjana", input$graphchoice32))) {
+        yearlyentry <- aggregate(aloittaneet~vuosi, data=data32(), FUN=sum)
+        yearlyexit <- aggregate(lopettaneet~vuosi, data=data32(), FUN=sum)
+        years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
+        plot <- timeseries(quartal_wrangler(data.frame(years, nettomuutos = (yearlyentry - yearlyexit))), "Yritysten määrän nettomuutos, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors)
       }
     })
     
     output$TotalExit_PropDouble <- renderPlotly({
       
-      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, FALSE, FALSE, TRUE)
+      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+          & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, FALSE, FALSE, TRUE, "Aloittaneet yritykset, osuus yrityskannasta, vuosineljänneksittäin", FALSE)
         ggplotly()
-      } else if (is.element("Samassa kuvaajassa", input$graphchoice32)& (is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, TRUE, FALSE, TRUE)
+      } else if (is.element("Samassa kuvaajassa", input$graphchoice32)& (is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, TRUE, FALSE, TRUE, "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, vuosineljänneksittäin", FALSE)
         ggplotly()
-      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, FALSE, TRUE, TRUE)
+      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, FALSE, TRUE, TRUE, "Aloittaneet yritykset, osuus yrityskannasta, vuosineljänneksittäin", FALSE)
         ggplotly()
-      } else if ((is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), TRUE, TRUE, TRUE, TRUE)
+      } else if ((is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), TRUE, TRUE, TRUE, TRUE, "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, vuosittain", FALSE)
         ggplotly()
+      } else if (is.element("Aikasarjana", input$graphchoice32) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet/data32()$ntotal), (data32()$lopettaneet/data32()$ntotal))), "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors)
+      } else if (is.element("Aikasarjana", input$graphchoice32) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        yearlyentry <- aggregate((aloittaneet/ntotal)~vuosi, data=data32(), FUN=sum)
+        yearlyexit <- aggregate((lopettaneet/ntotal)~vuosi, data=data32(), FUN=sum)
+        years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
+        plot <- timeseries(quartal_wrangler(data.frame(years, aloittaneet = yearlyentry, lopettaneet = yearlyexit)), "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors)
+      } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (!is.element("Aikasarjana", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, TRUE, "Yritysten määrän nettomuutos, osuus yrityskannasta", TRUE)
+        ggplotly()
+      } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (is.element("Aikasarjana", input$graphchoice32))) {
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet/data32()$ntotal) - (data32()$lopettaneet/data32()$ntotal))), "Yritysten määrän nettomuutos, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors)
+      } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
+                 & (is.element("Aikasarjana", input$graphchoice32))) {
+        yearlyentry <- aggregate((aloittaneet/ntotal)~vuosi, data=data32(), FUN=sum)
+        yearlyexit <- aggregate((lopettaneet/ntotal)~vuosi, data=data32(), FUN=sum)
+        years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
+        plot <- timeseries(quartal_wrangler(data.frame(years, nettomuutos = (yearlyentry - yearlyexit))), "Yritysten määrän nettomuutos, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors)
       }
       
     })
     
     output$PropEntry <- renderPlotly({
       
-      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, FALSE)
+      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+          & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, FALSE, "Lopettaneet yritykset, lkm, vuosineljänneksittäin", FALSE)
         ggplotly()
-      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), FALSE, FALSE, TRUE, FALSE)
+      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), FALSE, FALSE, TRUE, FALSE, "Lopettaneet yritykset, lkm, vuosittain", FALSE)
         ggplotly()
-      }
+      } else if (is.element("Samassa kuvaajassa", input$graphchoice32) | (is.element("Aikasarjana", input$graphchoice32))| (is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- industryturnover(data35())
+        ggplotly(tooltip=c("x", "fill"))
+      } 
       
     })
     
     output$PropExit <- renderPlotly({
       
-      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, TRUE)
+      if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+          & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, TRUE, "Lopettaneet yritykset, osuus yrityskannasta, vuosineljänneksittäin", FALSE)
         ggplotly()
-      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32))) {
-        plot <- exitentryplot(data32(), FALSE, FALSE, TRUE, TRUE)
+      } else if ((! is.element("Samassa kuvaajassa", input$graphchoice32)) & (! is.element("Näytä vuosineljännekset", input$graphchoice32)) & (!is.element("Aikasarjana", input$graphchoice32))
+                 & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        plot <- exitentryplot(data32(), FALSE, FALSE, TRUE, TRUE, "Lopettaneet yritykset, osuus yrityskannasta, vuosittain", FALSE)
         ggplotly()
       }
       
@@ -1189,12 +1292,21 @@ server <- function(input, output, session) {
     
     output$yearlyentryexit1 <- renderPlotly({
       
-      #if (is.element("Näytä yrityskanta",input$graphchoice32)) {
-      
         plot <- stockplot(data32(), input$graphchoice32)
         ggplotly()
       
-      #}
+    })
+    
+    output$turnoverIndustry <- renderPlotly({
+      
+      if (!is.element("Samassa kuvaajassa", input$graphchoice32) & (!is.element("Aikasarjana", input$graphchoice32))
+          & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
+        
+        bar <- industryturnover(data35())
+        
+        ggplotly(tooltip=c("x", "fill"))
+        
+      }
       
     })
   
@@ -1203,23 +1315,79 @@ server <- function(input, output, session) {
     output$subsidyPlot <- renderPlotly({
       
       handoutdata <- data33()
+      
+      colnames(handoutdata)[1] <- as.character(input$variablechoice33)
 
       if (grepl("lukumäärä", as.character(input$variablechoice33)) & length(input$graphchoice33)==1) {
-        ggplot(handoutdata, aes(x=vuosineljännes, y = num, fill=factor(kokoluokka))) + xlab("Vuosineljännes") + ylab("Osuus") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=DHcolors)
+       plot <- ggplot(handoutdata, aes(x=vuosineljännes, y = handoutdata[,1], fill=kokoluokka)) + xlab("Vuosineljännes") + ylab("Tukea saaneiden yritysten osuus yrityskannasta") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=colorsample(5))
+       plot <- plot + scale_y_continuous(labels = tuhaterotin)
         ggplotly()
         
       } else if (grepl("lukumäärä", as.character(input$variablechoice33)) & length(input$graphchoice33)==0) {
-        ggplot(handoutdata, aes(x=vuosineljännes, y = num, fill=factor(kokoluokka))) + xlab("Vuosineljännes") + ylab("Yritystä") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(handoutdata, aes(x=vuosineljännes, y = handoutdata[,1], fill=kokoluokka)) + xlab("Vuosineljännes") + ylab("Yritystä") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=colorsample(5))
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         ggplotly()
         
       }
       
       else {
-        ggplot(handoutdata, aes(x=vuosineljännes, y = num, fill=factor(kokoluokka))) + xlab("Vuosineljännes") + ylab("Tuhatta euroa") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(handoutdata, aes(x=vuosineljännes, y = handoutdata[,1], fill=kokoluokka)) + xlab("Vuosineljännes") + ylab("Tuhatta euroa") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=colorsample(5))
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         ggplotly()
         
       }
 
+    })
+    
+    output$productivityTurnoverScatter <- renderPlotly({
+      
+      data1 <- data4()[, c(1, 3)]
+      data2 <- data321()[, c(2, 4)]
+      
+      colnames(data1) <- c("productivity", "NUTS3")
+      colnames(data2) <- c("turnover", "NUTS3")
+      
+      data <- join(data1, data2, by="NUTS3")
+      
+      plot <- scatterplot(data, "texts", FALSE, c("turnover", "productivity"))
+      
+      ggplotly()
+      
+    })
+    
+    output$productivityBankruptcyScatter <- renderPlotly({
+      
+      data4 <- data42()
+      
+      data3 <- data41()
+      
+      #data1 <- data14()
+      data2 <- data4()
+      
+      colnames(data4) <- c("maakunta", "konkursseja")
+      colnames(data2) <- c("tuottavuus", "maakunta","nutsname")
+      
+      print(data3)
+      print(data4)
+      
+      print(data2)
+      
+      data1 <- join(data4, data3, by="maakunta")
+      
+      data1 <- join(BRCfinsubs, data1, by="maakunta")
+      
+      data <- join(data1, data2, by="nutsname")
+      data$konkurssiosuus <- data$konkursseja/data$yrityskanta
+      
+      print(data)
+
+      
+      data <- data[!duplicated(colnames(data))]
+      
+      plot <- scatterplot(data, "texts", FALSE, c("konkurssiosuus", "tuottavuus"))
+      
+      ggplotly()
+      
     })
     
     ##### REVENUE SERIES #####
@@ -1238,6 +1406,8 @@ server <- function(input, output, session) {
         
       }
       
+      return(revenueseries)
+      
     })
     
     ##### FIRM TYPE TREEMAP #####
@@ -1249,6 +1419,8 @@ server <- function(input, output, session) {
         hc_colorAxis(stops = color_stops(colors = DHcolors))
       
     })
+    
+    ##### FRONT PAGE: TREEMAP, VALUE BOXES, GOOGLE TRENDS, BANKRUPTCY, INFLATION, PAYROLL AND BUSINESS CYCLE TIME SERIES #####
     
     output$vbox1 <- renderValueBox({
       
@@ -1283,10 +1455,14 @@ server <- function(input, output, session) {
     })
     
     output$bankruptcySeries <- renderPlotly({
-      
+     
       konkurssisarja <- time_series_wrangler(konkurssisarja)
       
       plot <- timeseries(konkurssisarja, "Konkurssit", TRUE, "2005-01-01", DHcolors)
+      
+      #plot <- plot %>% add_trace(type = 'scatter', mode='lines', x=konkurssisarja$time, y=konkursseja, text=konkursseja, hovertemplate = paste('Konkurssien määrä: $%{konkursseja:.2f}'))
+      
+      #return(plot)
       
     })
     
@@ -1314,221 +1490,179 @@ server <- function(input, output, session) {
       
     })
     
-  ##### NOT YET IMPLEMENTED #####
-    ##### PRODUCTIVITY HISTOGRAM #####
-    ##### PRODUCTIVITY GRAPHLOT #####
-    ##### PRODUCTIVITY BARPLOT #####
-    ##### PRODUCTIVITY MAP #####
-      
-  ##### NOT USED #####
-  
-    ##### US BANKRUPTCY MAP #####
-      
-    output$USmapPlot <-renderPlot({
-        
-        valvec <- c()
-        
-        for (i in 1:length(charvec)) {
-          if (charvec[i] %in% input$industries){
-            for (k in 1:length(na.omit(newdf[i,]))){
-              valvec <- append(valvec, newdf[k,i])
-            }
-          }
-        }
-        
-        valvec <- na.omit(valvec)
-        
-        newdf <- statepop[,c(1, 4)]
-        state_abbrs <- statepop[,c(2)]
-        
-        BRC1 <- subset(BRC, is.element(floor(BRC$SICPrimary/100), valvec))
-        
-        for (i in 1:51) {
-          newdf$pop_2015[i] <-length(BRC1$DistFiled[substr(BRC1$DistFiled, start=1,stop=2) == toString(state_abbrs[i,])])
-        }
-        
-        colnames(newdf) <- c('fips', 'bankruptcies')
-        
-        plot_usmap(data = newdf, values="bankruptcies") + 
-          scale_fill_continuous(
-            low = "white", high = "red", name = "Bankruptcies", label = scales::comma
-          ) +
-          labs(title = "Bankruptcies, state level, 1979-2021",
-               subtitle = "This is a map of US States and n.o. bankruptcies between selected years") + 
-          theme(panel.background = element_rect(color = "black", fill = "lightblue"))
-      })
+    ##### EMPTY VALUE BOXES FOR FORMATTING #####
     
-    ##### INVESTIGATE #####
-    
-    output$timeSeriesSeparate <- renderPlot({
+    output$emptyvbox <- renderValueBox({
       
-      data <- data12()
-      
-      h <- hist(data12$year, breaks=diffyears12(), plot=TRUE)
-      plot(x=h$mids, y=h$counts, type="o", col="darkblue", pch=16, xaxt="n", lwd=2, cex=1, ylab ="N.o. bankruptcies", xlab="year", 
-           main = "N.o. bankruptcies, time series")
-      
-    })
-      
-    ##### EXIT/ENTRY DOUBLE CHARTS, CURRENTLY EMBEDDED INTO SINGLE CHARTS AS CONDITIONAL OUTPUTS #####
-    
-    output$TotalDouble <- renderPlot({
-      
-      data1 <- data32()
-      
-      fuelabs <- data.frame(vuosineljännes = data1$vuosineljännes, 
-                            nentry = as.numeric(data1$nentry), nexit = as.numeric(data1$nexit), total = as.numeric(data1$ntotal),
-                            vuosi = as.numeric(substr(data1$vuosineljännes, 1, 4)),
-                            neljännes = as.character(substr(data1$vuosineljännes, 5, 6)))
-      
-      entrytoexit <- data.frame(
-        group = c(rep("nentry", nrow(data1)), rep("nexit", nrow(data1))),
-        vuosineljännes = fuelabs$vuosineljännes,
-        vuosi = fuelabs$vuosi,
-        neljännes = fuelabs$neljännes,
-        y = c(fuelabs$nentry, - fuelabs$nexit))
-      
-      exitentryplot <- ggplot(entrytoexit, aes(x = factor(neljännes), y = as.double(y), 
-                                               fill = vuosi, colour = vuosineljännes)) + geom_bar(position = "dodge", stat="identity")
-      
-      if (vector.is.empty(input$graphchoice32) == FALSE) {
-        plot(exitentryplot)
-      }
+      valueBox("", "")
       
     })
     
-    output$PropDouble <- renderPlot({
+    output$emptyvbox2 <- renderValueBox({
       
-      data1 <- data32()
-      
-      fuelfraq <- data.frame(vuosineljännes = data1$vuosineljännes,
-                             nentry = as.numeric(data1$nentry)/as.numeric(data1$ntotal), nexit = as.numeric(data1$nexit)/as.numeric(data1$ntotal),
-                             vuosi = as.numeric(substr(data1$vuosineljännes, 1, 4)),
-                             neljännes = as.character(substr(data1$vuosineljännes, 5, 6)))
-      
-      entrytoexit <- data.frame(
-        group = c(rep("nentry", nrow(data1)), rep("nexit", nrow(data1))),
-        vuosineljännes = fuelfraq$vuosineljännes,
-        vuosi = fuelfraq$vuosi,
-        neljännes = fuelfraq$neljännes,
-        y = c(fuelfraq$nentry, - fuelfraq$nexit))
-      
-      exitentryplot <- ggplot(entrytoexit, aes(x = factor(neljännes), y = as.double(y), 
-                                               fill = vuosi, colour = vuosineljännes)) + geom_bar(position = "dodge", stat="identity")
-      
-      if (vector.is.empty(input$graphchoice32) == FALSE) {
-        plot(exitentryplot)
-      }
-      
+      valueBox("", "")
       
     })
     
-    output$turnoverIndudstry <- renderPlotly({
+    output$emptyvbox3 <- renderValueBox({
       
-      turnoverindustrygroup <- data35()
-      
-      bar <- ggplot(turnoverindustrygroup, aes(x=turnoverindustrygroup$turnoverrate, y=substr(turnoverindustrygroup$luokitus, 1, 60)))
-      bar <- bar + geom_col(aes(fill = turnoverindustrygroup$turnoverrate, color=turnoverindustrygroup$turnoverrate))
-      bar <- bar + ggtitle("Toimialakohtainen vaihtuvuus maakuntatasolla")
-      ggplotly(bar)
+      valueBox("", "")
       
     })
     
-    exitentryplot <- function(data, entry, double, yearly, proportional) {
+    output$emptyvbox4 <- renderValueBox({
+      
+      valueBox("", "")
+      
+    })
+    
+    output$emptyvbox6 <- renderValueBox({
+      
+      valueBox("", "")
+      
+    })
+    
+    output$emptyvbox7 <- renderValueBox({
+      
+      valueBox("", "")
+      
+    })
+    
+    output$prodmap <- renderPlot({
+      
+      data <- data4()
+      
+      mapdf <- join(mydata, data, by = "nutsname")
+      
+      mapplot <- map(mapdf, "prod", "Tuottavuus maakuntatasolla", "", "id", 2, 8)
+      
+      plot(mapplot)
+      
+    }, height=850, width=650)
+    
+    ##### PLOTTING FUNCTIONS #####
+    
+    exitentryplot <- function(data, entry, double, yearly, proportional, title, net) {
       
       data1 <- data
       
       if (proportional == TRUE) {
         
         data <- data.frame(vuosineljännes = data1$vuosineljännes,
-                           nentry = as.numeric(data1$nentry)/as.numeric(data1$ntotal), nexit = as.numeric(data1$nexit)/as.numeric(data1$ntotal),
+                           aloittaneet = as.numeric(data1$aloittaneet)/as.numeric(data1$ntotal), lopettaneet = as.numeric(data1$lopettaneet)/as.numeric(data1$ntotal),
                            vuosi = factor(as.character(substr(data1$vuosineljännes, 1, 4))),
                            neljännes = as.character(substr(data1$vuosineljännes, 5, 6)),
-                           group = c(rep("nentry", nrow(data1)), rep("nexit", nrow(data1))),
-                           y = c(as.numeric(data1$nentry)/as.numeric(data1$ntotal), - as.numeric(data1$nexit)/as.numeric(data1$ntotal)))
-        ylabtxt = "Osuus"
+                           group = c(rep("aloittaneet", nrow(data1)), rep("lopettaneet", nrow(data1))),
+                           aloittaneet_lopettaneet = c(as.numeric(data1$aloittaneet)/as.numeric(data1$ntotal), - as.numeric(data1$lopettaneet)/as.numeric(data1$ntotal)),
+                           nettomuutos = (as.numeric(data1$aloittaneet)/as.numeric(data1$ntotal) - as.numeric(data1$lopettaneet)/as.numeric(data1$ntotal)))
+        ylabtxt = "Osuus yrityskannasta"
         
       } else if (proportional == FALSE) {
         
         data <- data.frame(vuosineljännes = data1$vuosineljännes, 
-                           nentry = as.numeric(data1$nentry), nexit = as.numeric(data1$nexit), total = as.numeric(data1$ntotal),
+                           aloittaneet = as.numeric(data1$aloittaneet), lopettaneet = as.numeric(data1$lopettaneet), total = as.numeric(data1$ntotal),
                            vuosi = factor(as.character(substr(data1$vuosineljännes, 1, 4))),
                            neljännes = as.character(substr(data1$vuosineljännes, 5, 6)),
-                           group = c(rep("nentry", nrow(data1)), rep("nexit", nrow(data1))),
-                           y = c(as.numeric(data1$nentry), - as.numeric(data1$nexit)))
+                           group = c(rep("aloittaneet", nrow(data1)), rep("lopettaneet", nrow(data1))),
+                           aloittaneet_lopettaneet = c(as.numeric(data1$aloittaneet), - as.numeric(data1$lopettaneet)),
+                           nettomuutos = (as.numeric(data1$aloittaneet) - as.numeric(data1$lopettaneet)))
         ylabtxt = "Lukumäärä"
       }
       
-      if (entry==TRUE & double == FALSE & yearly == FALSE) {
+      if (entry==TRUE & double == FALSE & yearly == FALSE & net == FALSE) {
         
-        plot <- ggplot(data, aes(x = neljännes, y = nentry, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
-        plot <- plot + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(data, aes(x = neljännes, y = aloittaneet, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
         plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         
-      } else if (entry==FALSE & double == FALSE & yearly == FALSE) {
+      } else if (entry==FALSE & double == FALSE & yearly == FALSE & net == FALSE) {
         
-        plot <- ggplot(data, aes(x = neljännes, y = nexit, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
-        plot <- plot + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(data, aes(x = neljännes, y = lopettaneet, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
         plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         
-      } else if (double == TRUE & yearly == FALSE) {
+      } else if (double == TRUE & yearly == FALSE & net == FALSE) {
         
-        plot <- ggplot(data, aes(x = neljännes, y = y, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
-        plot <- plot + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(data, aes(x = neljännes, y = aloittaneet_lopettaneet, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
         plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         
-      } else if (entry==TRUE & double == FALSE & yearly == TRUE) {
+      } else if (entry==TRUE & double == FALSE & yearly == TRUE & net == FALSE) {
         
         fuel <- data[,c(1:5)]
         fuel <- distinct(fuel, vuosineljännes, .keep_all=TRUE)
         
-        print(fuel)
-        
-        yearlyentry <- aggregate(nentry~vuosi, data=fuel, FUN=sum)
-        yearlyexit <- aggregate(nexit~vuosi, data=fuel, FUN=sum)
+        yearlyentry <- aggregate(aloittaneet~vuosi, data=fuel, FUN=sum)
+        yearlyexit <- aggregate(lopettaneet~vuosi, data=fuel, FUN=sum)
         
         fuel <- data.frame(
-          nexit = yearlyexit$nexit, nentry = yearlyentry$nentry,
+          lopettaneet = yearlyexit$lopettaneet, aloittaneet = yearlyentry$aloittaneet,
           vuosi = yearlyentry$vuosi)
         
-        print(fuel)
-        
-        plot <- ggplot(fuel, aes(x = vuosi, y = nentry, fill = vuosi, colour = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosi")
-        plot <- plot + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(fuel, aes(x = vuosi, y = aloittaneet, fill = vuosi, colour = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosi")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
         plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         
-      } else if (entry==FALSE & double == FALSE & yearly == TRUE) {
+      } else if (entry==FALSE & double == FALSE & yearly == TRUE & net == FALSE) {
         
         fuel <- data[,c(1:5)]
         fuel <- distinct(fuel, vuosineljännes, .keep_all=TRUE)
         
-        yearlyentry <- aggregate(nentry~vuosi, data=fuel, FUN=sum)
-        yearlyexit <- aggregate(nexit~vuosi, data=fuel, FUN=sum)
+        yearlyentry <- aggregate(aloittaneet~vuosi, data=fuel, FUN=sum)
+        yearlyexit <- aggregate(lopettaneet~vuosi, data=fuel, FUN=sum)
         
         data <- data.frame(
-          nexit = yearlyexit$nexit, nentry = yearlyentry$nentry,
+          lopettaneet = yearlyexit$lopettaneet, aloittaneet = yearlyentry$aloittaneet,
           vuosi = yearlyentry$vuosi)
         
-        plot <- ggplot(data, aes(x = vuosi, y = nexit, fill = vuosi, colour = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosi")
-        plot <- plot + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(data, aes(x = vuosi, y = lopettaneet, fill = vuosi, colour = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosi")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
         plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         
-      } else if (double == TRUE & yearly == TRUE) {
+      } else if (double == TRUE & yearly == TRUE & net == FALSE) {
         
         fuel <- data[,c(1:5)]
         fuel <- distinct(fuel, vuosineljännes, .keep_all=TRUE)
         
-        yearlyentry <- aggregate(nentry~vuosi, data=fuel, FUN=sum)
-        yearlyexit <- aggregate(nexit~vuosi, data=fuel, FUN=sum)
+        yearlyentry <- aggregate(aloittaneet~vuosi, data=fuel, FUN=sum)
+        yearlyexit <- aggregate(lopettaneet~vuosi, data=fuel, FUN=sum)
         
         data <- data.frame(
-          nexit = yearlyexit, nentry = yearlyentry,
+          lopettaneet = yearlyexit, aloittaneet = yearlyentry,
           vuosi = yearlyentry$vuosi,
-          y = c(as.numeric(yearlyentry$nentry), - as.numeric(yearlyexit$nexit)))
+          y = c(as.numeric(yearlyentry$aloittaneet), - as.numeric(yearlyexit$lopettaneet)))
         
-        plot <- ggplot(data, aes(x = vuosi, y = y, fill = vuosi, colour = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosi")
-        plot <- plot + scale_fill_manual(values=DHcolors)
+        plot <- ggplot(data, aes(x = vuosi, y = aloittaneet_lopettaneet, fill = vuosi, colour = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosi")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
         plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
+        
+      } else if (yearly == FALSE & net == TRUE) {
+        
+        plot <- ggplot(data, aes(x = neljännes, y = nettomuutos, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
+        plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
+        
+      } else if (yearly == TRUE & net == TRUE) {
+        
+        plot <- ggplot(data, aes(x = neljännes, y = nettomuutos, fill = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab(ylabtxt) + xlab("Vuosineljännes")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors))
+        plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(title)
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
         
       }
       
@@ -1538,20 +1672,22 @@ server <- function(input, output, session) {
         
       data1 <- data
       
-      fuel <- data.frame(totstock <- data1$ntotal, vuosineljännes = data1$vuosineljännes,
+      fuel <- data.frame(yrityskanta <- as.numeric(data1$ntotal), vuosineljännes = data1$vuosineljännes,
                          vuosi = factor(as.character(substr(data1$vuosineljännes, 1, 4))),
                          neljännes = as.character(substr(data1$vuosineljännes, 5, 6)))
       
-      plot <- ggplot(fuel, aes(x = vuosi, y = as.numeric(totstock), fill = vuosi, colour = vuosi)) + geom_bar(position = "dodge", stat="identity") + ylab("yristyskanta") + xlab("Vuosi")
+      plot <- ggplot(fuel, aes(x = vuosi, y = yrityskanta)) + geom_bar(position = "dodge", stat="identity", show.legend=FALSE) + ylab("yristyskanta") + xlab("Vuosi") #aes(x = vuosi, y = yrityskanta, fill = vuosi)
       plot <- plot + scale_fill_manual(values=rep("black", 10))
-      plot <- plot + geom_hline(yintercept=0, color="red")
+      plot <- plot + scale_y_continuous(labels = tuhaterotin)
       
     }
     
-    map <- function(data, varname, main, text, id, decimals) {
+    map <- function(data, varname, main, text, id, decimals, fontsize) {
       
       df <- join(mapdata, mydata, by="id")
+      
       df <- join(df, coordinates, by="id")
+      
       df <- join(df, data, by=id)
       
       for (i in 1:nrow(df)) {
@@ -1560,14 +1696,35 @@ server <- function(input, output, session) {
         }
       }
       
-      print(df)
+      ##### SIRGU SOOME #####
+      
+      ##### 'angle' arvutatakse kraadide korrutamisel 100-ga (näiteks 100*30° = 0.3 ) #####
+      
+      angle <- 0.3
+      
+      rotmatrix <- matrix(c(cos(angle), -sin(angle), sin(angle), cos(angle)), nrow=2, ncol=2, byrow=TRUE)
+      
+      for (i in 1:length(df$lat)) {
+        temp <- c(df$lat[i], df$long[i])
+        temp <- rotmatrix%*%temp
+        df$lat[i] <- temp[1]
+        df$long[i] <- temp[2]
+      }
+      
+      for (i in 1:length(df$meanlat)) {
+        temp <- c(df$meanlat[i], df$meanlong[i])
+        temp <- rotmatrix%*%temp
+        df$meanlat[i] <- temp[1]
+        df$meanlong[i] <- temp[2]
+      }
       
       df <- df[, !duplicated(colnames(df))]
       
       gg <- ggplot() + geom_polygon(data = df, aes(x = long, y = lat, group = group, fill=round(df[,which(colnames(df)==varname)], decimals)), color = "darkgrey", size = 0.5)
+      #gg <- maptools::elide(gg, rotate=45)
       gg <- gg + scale_fill_continuous(low = "white", high = DHcolors[8], name = "Productivity estimates", limits=c(min(round(df[,which(colnames(df)==varname)], decimals)),max(round(df[,which(colnames(df)==varname)], decimals))), na.value="transparent",
                                        label = scales::comma)
-      gg <- gg + geom_text(data=df, aes(meanlong, meanlat, label=round(df[,which(colnames(df)==varname)], decimals)), size =8)
+      gg <- gg + geom_text(data=df, aes(meanlong, meanlat, label=round(df[,which(colnames(df)==varname)], decimals)), size =fontsize)
       gg <- gg + coord_fixed(1)
       gg <- gg + theme_dark()
       gg <- gg + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = 'none')
@@ -1582,20 +1739,115 @@ server <- function(input, output, session) {
     
     timeseries <- function(data, texts, argument, baseyear, colours) {
       
-      timeseries <- TSstudio::ts_plot(data, title=texts, slider=TRUE) 
+      timeseries <- TSstudio::ts_plot(data, color= colorsample(1) ,title=texts, slider=TRUE) 
       
       if (argument & ncol(data)==2) {
         
-        timeseries %>% add_segments(y=min(data[,-1]), x= as.POSIXct(baseyear), yend=max(data[,-1]), xend=as.POSIXct(baseyear), color = "black", showlegend=FALSE) |> layout(showlegend=FALSE, colorway=colours[runif(1, 0, length(colours))])
+        timeseries %>% add_segments(y=min(data[,-1]), x= as.POSIXct(baseyear), yend=max(data[,-1]), xend=as.POSIXct(baseyear), text ="Perusvuosi", showlegend=FALSE) |> layout(showlegend=FALSE, colorway=colours[runif(1, 0, length(colours))])
         
       } else if (argument & ncol(data)>2) {
         
-        timeseries %>% add_segments(y=min(data[,-1]), x= as.POSIXct(baseyear), yend=max(data[,-1]), xend=as.POSIXct(baseyear), color = "black", showlegend=TRUE) |> layout(showlegend=TRUE, colorway=colours)
+        timeseries %>% add_segments(y=min(data[,-1]), x= as.POSIXct(baseyear), yend=max(data[,-1]), xend=as.POSIXct(baseyear), text ="Perusvuosi",  showlegend=TRUE) |> layout(showlegend=TRUE, colorway=colours) #color = "black",
         
       } else {
         
         timeseries |> layout(showlegend=TRUE, colorway=colours)
       }
+      
+    }
+    
+    industryturnover <- function(data) {
+      
+      turnoverindustrygroup <- data
+      
+      colnames(turnoverindustrygroup) <- c("Toimiala","Vaihtuvuus")
+      turnoverindustrygroup$Kirjaintaso <- substr(turnoverindustrygroup$Toimiala, 1, 2)
+      
+      bar <- ggplot(turnoverindustrygroup, aes(x=Vaihtuvuus, y=Kirjaintaso, fill = Toimiala))+ geom_bar(position = "dodge", stat="identity")
+      bar <- bar + scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors))
+      bar <- bar + ggtitle("Toimialakohtainen vaihtuvuus maakuntatasolla")
+      bar <- bar + theme(legend.title = element_text(size=10),
+                         legend.text = element_text(size=8),
+                         legend.key.size = unit(0.5, 'cm'),
+                         legend.key.height = unit(0.5, 'cm'), 
+                         legend.key.width = unit(0.5, 'cm'),
+                         axis.title.y = element_blank())
+      
+      return(bar)
+      
+    }
+    
+    bankruptcygraphs <- function(texts, bars, var) {
+      
+      if (bars == FALSE & var == "TOL") {
+        
+        decomp <- data.frame(time=unique(data124()$time))
+        
+        BRCfinmod <- month_wrangler(BRCfin)
+        
+        for (i in 1:length(input$regions12)) {
+          
+          decomp <- cbind(decomp, BRCfinmod$nobs[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$time > input$dates12[1] & BRCfinmod$time < input$dates12[2]]) 
+          
+        }
+        
+        colnames(decomp) <- c("time", input$regions12)
+        
+        d <- timeseries(decomp, texts, FALSE, as.character(sys.date()), c(DHcolors, DHcolors, DHcolors))
+        
+        return(d)
+        
+      } else if (bars==TRUE & var == "TOL") {
+        
+        data <- aggregate(nobs~time+TOL, data= data123(), FUN="sum")
+        
+        plot <- ggplot(data, aes(x = time, y = nobs, fill = TOL)) + geom_bar(stat="identity") + ylab("ylabtxt") + xlab("Vuosi")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors))
+        plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(texts[1])
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
+        
+        plot <- ggplotly(plot)
+        
+        return(plot)
+        
+      } else if (bars==FALSE & var == "maakunta") {
+        
+        decomp <- data.frame(time=unique(data125()$time))
+        
+        BRCfinmod <- month_wrangler(BRCfin)
+        
+        for (i in 1:length(input$industries12)) {
+          
+          decomp <- cbind(decomp, BRCfinmod$nobs[BRCfinmod$TOL == input$industries12[i] & BRCfinmod$maakunta == "KOKO MAA" & BRCfinmod$time > input$dates12[1] & BRCfinmod$time < input$dates12[2]]) 
+          
+        }
+        
+        colnames(decomp) <- c("time", input$industries12)
+        
+        d <- timeseries(decomp, texts, FALSE, as.character(sys.date()), c(DHcolors, DHcolors, DHcolors))
+        
+      } else if (bars==TRUE & var == "maakunta") {
+        
+        data <- aggregate(nobs~time+maakunta, data= data122(), FUN="sum")
+        
+        plot <- ggplot(data, aes(x = time, y = nobs, fill = maakunta)) + geom_bar(stat="identity") + ylab("ylabtxt") + xlab("Vuosi")
+        plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors))
+        plot <- plot + geom_hline(yintercept=0, color="red")
+        plot <- plot + ggtitle(texts[1])
+        plot <- plot + scale_y_continuous(labels = tuhaterotin)
+        
+        plot <- ggplotly(plot)
+        
+      } 
+      
+    }
+    
+    scatterplot <- function(data, texts, trend, vars) {
+      
+      plot <- ggplot(data, aes_string(x=vars[1], y=vars[2])) + geom_point(size=2, shape=23)
+      plot <- plot + geom_smooth(method=lm,se=TRUE)
+      return(plot)
       
     }
     

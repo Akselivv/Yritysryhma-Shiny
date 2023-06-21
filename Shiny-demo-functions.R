@@ -1,35 +1,46 @@
-list_of_packages <- c("shiny", "plyr", "plotly","shinyjs","ECharts2Shiny", "tidyverse", "highcharter", "shinydashboard")
+#list_of_packages <- c("shiny", "plyr", "plotly","shinyjs","ECharts2Shiny", "tidyverse", "highcharter", "shinydashboard")
 
-list_of_removed_packages <- c("grid", "d3Tree", "ash", "XML", "treemapify", "shiny.router", "tidyr", "gplots", "lubridate",
-                              "RColorBrewer", "treemap", "DescTools", "ggmap", "maps", "maptools", "mapdata", "rgeos", "broom")
+#list_of_removed_packages <- c("grid", "d3Tree", "ash", "XML", "treemapify", "shiny.router", "tidyr", "gplots", "lubridate",
+#                             "RColorBrewer", "treemap", "DescTools", "ggmap", "maps", "maptools", "mapdata", "rgeos", "broom")
 
-list_of_redundant_packages <- c("TSstudio", "writexl", "gtrendsR", "rvest", "htmltools", "Hmisc", "RCurl", "zoo", "scales", 
-                                "rgdal", "dplyr", "ggplot2", "readr", "readxl")
+#list_of_redundant_packages <- c("TSstudio", "writexl", "gtrendsR", "rvest", "htmltools", "Hmisc", "RCurl", "zoo", "scales", 
+#                                "rgdal", "dplyr", "ggplot2", "readr", "readxl")
 
-packages_to_install <- list_of_packages[!(list_of_packages %in% installed.packages()[,"Package"])]
-if(length(packages_to_install)) install.packages(packages_to_install)
-lapply(list_of_packages, require, character.only = TRUE)
+#packages_to_install <- list_of_packages[!(list_of_packages %in% installed.packages()[,"Package"])]
+#if(length(packages_to_install)) install.packages(packages_to_install)
+#lapply(list_of_packages, require, character.only = TRUE)
+
+library(shiny)
+library(plotly)
+library(shinyjs)
+library(ECharts2Shiny)
+library(tidyverse)
+library(highcharter)
+library(shinydashboard)
+library(markdown)
+library(shinyWidgets)
+library(shinyscreenshot)
+library(ggplot2)
+library(magrittr)
 
 fetchyears <- function(x1, x2, x3, x4) {
-  dates <- BRC$Date10kBefore[as.Date(BRC$Date10kBefore,"%m/%d/%Y") > x1 & as.Date(BRC$Date10kBefore,"%m/%d/%Y") < x2 & is.element(BRC$industryabbr, x3) & is.element(BRC$fakefinregions, x4)]
-  dates <- as.POSIXct(dates, format = "%m/%d/%Y")
-  years <- as.numeric(format(dates, format="%Y"))
-  years
+  dates <- BRCfin$time[BRCfin$time > x1 & BRCfin$time < x2 & is.element(BRCfin$TOL, x3) & is.element(BRCfin$maakunta, x4)]
+  #dates <- as.POSIXct(dates, format = "%m/%d/%Y")
 }
 
 fetchindustries <- function(x1, x2, x3, x4) {
-  relevantindustries <- BRC$industry[as.Date(BRC$Date10kBefore,"%m/%d/%Y") > x1 & as.Date(BRC$Date10kBefore,"%m/%d/%Y") < x2 & is.element(BRC$industryabbr, x3) & is.element(BRC$fakefinregions, x4)]
-  relevantindustries
+  relevantindustries <- BRCfin$TOL[BRCfin$time > x1 & BRCfin$time < x2 & is.element(BRCfin$TOL, x3) & is.element(BRCfin$maakunta, x4)]
+  #relevantindustries
 }
 
 fetchregions <- function(x1, x2, x3, x4) {
-  relevantregions <- BRC$fakefinregions[as.Date(BRC$Date10kBefore,"%m/%d/%Y") > x1 & as.Date(BRC$Date10kBefore,"%m/%d/%Y") < x2 & is.element(BRC$industryabbr, x3) & is.element(BRC$fakefinregions, x4)]
-  relevantregions
+  relevantregions <- BRCfin$maakunta[BRCfin$time > x1 & BRCfin$time < x2 & is.element(BRCfin$TOL, x3) & is.element(BRCfin$maakunta, x4)]
+  #relevantregions
 }
 
 fetchassets <- function(x1, x2, x3, x4) {
-  relevantassets <- BRC$AssetsBefore[as.Date(BRC$Date10kBefore,"%m/%d/%Y") > x1 & as.Date(BRC$Date10kBefore,"%m/%d/%Y") < x2 & is.element(BRC$industryabbr, x3) & is.element(BRC$fakefinregions, x4)]
-  relevantassets
+  relevantnobs <- BRCfin$nobs[BRCfin$time > x1 & BRCfin$time < x2 & is.element(BRCfin$TOL, x3) & is.element(BRCfin$maakunta, x4)]
+  #relevantnobs
 }
 
 vector.is.empty <- function(x) { 
@@ -42,8 +53,6 @@ time_series_wrangler <- function(x) {
   
   x <- as.data.frame(x)
   
-  print(x)
-  
   x$time <- gsub('M', '', x$time)
   
   x$time <- as.POSIXct(paste0(as.character(x$time), '01'), format='%Y%m%d')
@@ -52,7 +61,24 @@ time_series_wrangler <- function(x) {
     x[,i] <- as.numeric(unlist(x[,i]))
   }
   
-  print(x)
+  return(x)
+  
+}
+
+quartal_wrangler <- function(x) {
+  
+  colnames(x)[1] <- "time"
+  
+  x <- as.data.frame(x)
+  
+  x$time <- gsub("Q1", "01", x$time)
+  x$time <- gsub("Q2", "04", x$time)
+  x$time <- gsub("Q3", "07", x$time)
+  x$time <- gsub("Q4", "10", x$time)
+  
+  x$time <- as.POSIXct(paste0(as.character(x$time), '01'), format='%Y%m%d')
+  
+  x <- x[!duplicated(x$time),]
   
   return(x)
   
@@ -63,5 +89,60 @@ data_cropper <- function(data, cols, startrows, endrows) {
   data <- data[,cols]
   data <- data[-startrows,]
   data <- data[-endrows,]
+  
+}
+
+tuhaterotin <- function(x){
+  format(x, big.mark= " ",
+         decimal.mark = ",",
+         scientific = FALSE)
+}
+
+prosenttierotin <- function(x){
+  paste0(tuhaterotin(x*100), " %")
+}
+
+randcolor <- function() {
+  
+  y <- sample(1:8, 1, replace = TRUE)
+  return(DHcolors[y])
+}
+
+colorsample <- function(x) {
+  
+  y <- sample(1:8, x, replace=FALSE)
+  return(DHcolors[y])
+}
+
+month_wrangler <- function(data) {
+  
+  colnames(data)[1] <- "time"
+  
+  data$time <- gsub('M', '', data$time)
+  data$time <- as.POSIXct(paste0(as.character(data$time), '01'), format='%Y%m%d')
+  return(data)
+  
+}
+
+months_to_quartals <- function(x) {
+  
+  colnames(x)[1] <- "time"
+  
+  x$time <- gsub("M01", "0101", x$time)
+  x$time <- gsub("M02", "0101", x$time)
+  x$time <- gsub("M03", "0101", x$time)
+  x$time <- gsub("M04", "0401", x$time)
+  x$time <- gsub("M05", "0401", x$time)
+  x$time <- gsub("M06", "0401", x$time)
+  x$time <- gsub("M07", "0701", x$time)
+  x$time <- gsub("M08", "0701", x$time)
+  x$time <- gsub("M09", "0701", x$time)
+  x$time <- gsub("M10", "1001", x$time)
+  x$time <- gsub("M11", "1001", x$time)
+  x$time <- gsub("M12", "1001", x$time)
+  
+  x$time <- as.POSIXct(as.character(x$time), format='%Y%m%d')
+  
+  return(x)
   
 }

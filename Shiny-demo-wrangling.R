@@ -1,3 +1,28 @@
+library(shiny)
+library(plotly)
+library(shinyjs)
+library(ECharts2Shiny)
+library(tidyverse)
+library(highcharter)
+library(shinydashboard)
+library(markdown)
+library(shinyWidgets)
+library(shinyscreenshot)
+library(ggplot2)
+library(magrittr)
+
+list_of_packages <- c("plyr", "plotly","shinyjs","ECharts2Shiny", "tidyverse", "highcharter", "shinydashboard")
+
+list_of_removed_packages <- c("grid", "d3Tree", "ash", "XML", "treemapify", "shiny.router", "tidyr", "gplots", "lubridate",
+                              "RColorBrewer", "treemap", "DescTools", "ggmap", "maps", "maptools", "mapdata", "rgeos", "broom")
+
+list_of_redundant_packages <- c("shiny", "TSstudio", "writexl", "gtrendsR", "rvest", "htmltools", "Hmisc", "RCurl", "zoo", "scales", 
+                                "rgdal", "dplyr", "ggplot2", "readr", "readxl")
+
+packages_to_install <- list_of_packages[!(list_of_packages %in% installed.packages()[,"Package"])]
+if(length(packages_to_install)) install.packages(packages_to_install)
+lapply(list_of_packages, require, character.only = TRUE)
+
 ##### SORT mAPDATA #####
 
 shapefile <- shapefile[(substr(shapefile$NUTS_ID, start=1,stop=2) == "FI"|substr(shapefile$NUTS_ID, start=1,stop=2) == "SE"
@@ -111,6 +136,19 @@ for (i in 1:length(BRC$SICPrimary)) {
   }
 }
 
+###### SORT BANKRUPTCY DATA #####
+
+BRCfin <- BRCfin[-(1:2),]
+BRCfin <- BRCfin[-(48313:48347),]
+
+colnames(BRCfin) <- c("date", "TOL", "maakunta", "nobs")
+
+BRCfin$date <- zoo::na.locf(BRCfin$date)
+
+BRCfin$TOL <- zoo::na.locf(BRCfin$TOL)
+
+BRCfin$nobs <- as.numeric(BRCfin$nobs) 
+
 ##### SORT ENTRY & EXIT DATA #####
 
 ##### SORT SUBSIDY DATA #####
@@ -136,7 +174,6 @@ handoutdata[handoutdata == "."] <- as.character(0)
 handoutdata <- handoutdata[handoutdata$kokoluokka != "Kaikki yritykset",]
 handoutdata <- handoutdata[handoutdata$TOL != "Muut toimialat" & handoutdata$TOL != "Toimiala tuntematon" & 
                              handoutdata$TOL != "Ei yritystunnusta",]
-print(handoutdata)
 
 propvec <- finalfinalfinaldf$nobs
 
@@ -151,7 +188,6 @@ for (i in 1:16) {
 }
 
 namerow[1] <- "Kuukausi"
-print(namerow)
 
 revenuedata <- revenuedata[-c(1:3),]
 revenuedata <- revenuedata[-c(160:199),]
@@ -204,17 +240,11 @@ for (i in 1:length(scrapedtable[,1])) {
   }
 }
 
-print(indvec)
-
 remvec <- c(1:length(scrapedtable[,1]))
 
 remvec <- remvec[! remvec %in% indvec]
 
-print(remvec)
-
 scrapedtable <- scrapedtable[remvec,]
-
-print(scrapedtable)
 
 MUUT <- c("Muut", MUUT)
 
@@ -224,6 +254,43 @@ scrapedtable[nrow(scrapedtable) + 1,] <- scrapedtable[nrow(scrapedtable) - 1,]
 
 scrapedtable <- scrapedtable[ -(nrow(scrapedtable) - 2),]
 
+##### Sort productivity data #####
+
+#print(kunnatmaakunnat)
+#print(kunnattuottavuus)
+
+kunnatmaakunnat <- read.csv2("~/R/Shiny_demo/data/kunnat_maakunnat_avain.csv")
+
+kunnatmaakunnat <- kunnatmaakunnat[,c(1, 4)]
+kunnatmaakunnat <- kunnatmaakunnat[-c(1),]
+
+colnames(kunnatmaakunnat) <- c("kunta", "maakunnat")
+
+kunnatmaakunnat$kunta <- gsub("'", "", kunnatmaakunnat$kunta)
+kunnatmaakunnat$maakunnat <- gsub("\xe4", "ä", kunnatmaakunnat$maakunnat)
+
+
+colnames(kunnattuottavuus) <- c("nro","kunta", "vuosi", "prod1", "nobs")
+
+kunnatmaakunnat[,1] <- substr(kunnatmaakunnat[,1], 1, 3)
+
+productivity <- join(kunnattuottavuus, kunnatmaakunnat, by="kunta")
+productivity <- na.omit(productivity)
+
+aggregateproddf <- data.frame(prod=numeric(length(unique(productivity$maakunnat))*length(unique(productivity$vuosi))),
+                              maakunta = numeric(length(unique(productivity$maakunnat))*length(unique(productivity$vuosi))),
+                              vuosi = numeric(length(unique(productivity$maakunnat))*length(unique(productivity$vuosi))))
+
+for (i in 1:length(unique(productivity$vuosi))) {
+  for (k in 1:length(unique(productivity$maakunnat))) {
+    aggregateproddf$vuosi[k+(i-1)*length(unique(productivity$maakunnat))] <- unique(productivity$vuosi)[i]
+    aggregateproddf$maakunta[k+(i-1)*length(unique(productivity$maakunnat))] <- unique(productivity$maakunnat)[k]
+    aggregateproddf$prod[k+(i-1)*length(unique(productivity$maakunnat))] <- sum(productivity$prod1[productivity$vuosi == unique(productivity$vuosi)[i] 
+                                                                                              & productivity$maakunnat == unique(productivity$maakunnat)[k]]*productivity$nobs[productivity$vuosi == unique(productivity$vuosi)[i] 
+                                                                                                                                                                              & productivity$maakunnat == unique(productivity$maakunnat)[k]], na.omit=TRUE)/(sum(productivity$nobs[productivity$vuosi == unique(productivity$vuosi)[i] 
+                                                                                                                                                                                   & productivity$maakunnat == unique(productivity$maakunnat)[k]], na.omit=TRUE))
+  }
+}
 
 ##### FUNCTIONS #####
 
@@ -237,7 +304,7 @@ yellow <- "#FBE802"
 orange <- "#F16C13"
 light_orange <- "#FFF1E0"
 
-DHcolors <- c(dark_green, light_green, dark_blue, light_blue, dark_red, light_red, yellow, orange, light_orange, dark_green)
+DHcolors <- c(dark_green, light_green, dark_blue, light_blue, dark_red, light_red, yellow, orange, light_orange)
 
 DHcolors2 <- c(dark_red, light_red, yellow, orange)
 
