@@ -1,8 +1,12 @@
 library(shiny)
+library(pkgload)
+library(plyr)
 library(plotly)
 library(shinyjs)
 library(ECharts2Shiny)
-library(tidyverse)
+library(readr)
+library(tibble)
+library(dplyr)
 library(highcharter)
 library(shinydashboard)
 library(markdown)
@@ -12,7 +16,8 @@ library(ggplot2)
 library(magrittr)
 library(tidyr)
 library(tidyselect)
-library(plyr)
+library(ggthemes)
+library(lubridate)
 
 ##### TASKS #####
 
@@ -24,15 +29,15 @@ library(plyr)
 
 ##### SOURCE AUXILIARY SCRIPTS #####
 
-source("Shiny-demo-functions.R")
+  source("Shiny-demo-functions.R")
 
-source("Shiny-demo-auxiliary.R")
-
-Yritysryhma_shiny <- function() {
+  source("Shiny-demo-auxiliary.R")
 
 ##### DEFINE UI #####
 
-ui <- navbarPage(
+ui <- function(request) {
+  
+  navbarPage(
 
   useShinyjs(),
 
@@ -75,10 +80,10 @@ navbarMenu(
 
           mainPanel(
             fluidRow(
-              column(12, img(id="image1", src="logo1.jpg", style="cursor:pointer;"), useShinyjs()),
-              column(12, img(id="image2", src="konkurssit.jpg", style="cursor:pointer;"), useShinyjs()),
-              column(12, img(id="image3", src="kokeelliset.jpg", style="cursor:pointer;"), useShinyjs()),
-              column(12, img(id="image4", src="tuottavuus.jpg", style="cursor:pointer;"), useShinyjs()),
+              #column(12, img(id="image1", src="logo1.jpg", style="cursor:pointer;"), useShinyjs()),
+              #column(12, img(id="image2", src="konkurssit.jpg", style="cursor:pointer;"), useShinyjs()),
+              #column(12, img(id="image3", src="kokeelliset.jpg", style="cursor:pointer;"), useShinyjs()),
+              #column(12, img(id="image4", src="tuottavuus.jpg", style="cursor:pointer;"), useShinyjs()),
               column(12, tags$figure(class= "centerFigure", tags$img(
                 src="whitespace.png", align="center",
                 width=1200,
@@ -90,70 +95,44 @@ navbarMenu(
                 width=1200,
                 alt=" "
               ),tags$figcaption(" "))),
+              
+              fluidRow(column(12, align = "center", splitLayout(cellWidths = c("50%", "50%"), valueBoxOutput("otsikko01"), textOutput("otsikko02")))),
 
-              column(12, splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("bankruptcySeries"), plotlyOutput("payrollSeries")))),
-            fluidRow(tags$a(
-
-              href = "https://stat.fi/tilasto/kony",
-              target = "_blank",
-              valueBox(
-
-                "",
-                "Lähde: Tilastokeskus. 13fb -- Konkurssit kuukausittain vuodesta 1986, 1986M01-2023M04", width=6
-              )
-
-            ), tags$a(
-
-              href = "https://www.stat.fi/tilasto/ktps",
-              target = "_blank",
-              valueBox(
-
-                "",
-                "Lähde: Tilastokeskus. 111m -- Palkkasummakuvaajat toimialoittain kuukausitasolla (2015=100), 1995M01-2023M03", width=6
-              )
-
-            )),
+              fluidRow(column(12, splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("bankruptcySeries"), plotlyOutput("payrollSeries"))))),
+            
+            fluidRow(
+              
+              link("https://www.stat.fi/tilasto/kony",
+                   "Lähde: Tilastokeskus. 13fb -- Konkurssit kuukausittain vuodesta 1986, 1986M01-2023M04", 6),
+              
+              link("https://www.stat.fi/tilasto/ktps",
+                   "Lähde: Tilastokeskus. 111m -- Palkkasummakuvaajat toimialoittain kuukausitasolla (2015=100), 1995M01-2023M03", 6)
+              
+            ),
+            
+            fluidRow(column(12, align = "center", splitLayout(cellWidths = c("50%", "50%"), textOutput("otsikko03"), textOutput("otsikko04")))),
+            
             fluidRow(column(12, splitLayout(cellWidths = c("50%", "50%"), plotlyOutput("inflationSeries"), plotlyOutput("cycleSeries")))),
-            fluidRow(tags$a(
-
-              href = "https://www.stat.fi/tilasto/khi",
-              target = "_blank",
-              valueBox(
-
-                "",
-                "Lähde: Tilastokeskus. 11xb -- Kuluttajahintaindeksi (2015=100), kuukausitiedot, 2015M01-2023M04", width=6
-              )
-
-            ), tags$a(
-
-              href = "https://www.stat.fi/tilasto/ktkk",
-              target = "_blank",
-              valueBox(
-
-                "",
-                "Lähde: Tilastokeskus. 132f -- Tuotannon suhdannekuvaaja, kuukausittain, 1995M01-2023M03", width=6
-              )
-
-            )),
+            fluidRow(
+            
+              link("https://www.stat.fi/tilasto/khi",
+                   "Lähde: Tilastokeskus. 11xb -- Kuluttajahintaindeksi (2015=100), kuukausitiedot, 2015M01-2023M04", 6),
+              
+              link("https://www.stat.fi/tilasto/ktkk",
+                   "Lähde: Tilastokeskus. 132f -- Tuotannon suhdannekuvaaja, kuukausittain, 1995M01-2023M03", 6)
+            
+            ),
             fluidRow(
               column(12, tags$figure(class= "centerFigure", tags$img(
                 src="whitespace.png", align="center",
                 width=1200,
                 alt=" "
-              ),tags$figcaption(" "))),
-              column(12, plotlyOutput("searchInterest"))),
-            fluidRow(valueBoxOutput("emptyvbox6", width = 8), tags$a(
-
-              href = "https://trends.google.com/trends/explore?date=2017-06-14%202023-06-14&geo=FI&q=konkurssit,lama,yritystuet,ansiosidonnainen&hl=fi",
-              target = "_blank",
-              valueBox(
-
-                "",
-                "Lähde: Google Trends"
-
-              )
-
-              )
+              ),tags$figcaption(" ")))#,
+              #column(12, plotlyOutput("searchInterest"))),
+            #fluidRow(valueBoxOutput("emptyvbox6", width = 8),
+              
+              #link("https://trends.google.com/trends/explore?date=2017-06-14%202023-06-14&geo=FI&q=konkurssit,lama,yritystuet,ansiosidonnainen&hl=fi",
+                   #"Lähde: Google Trends", 12)
           )
         )
       )
@@ -166,52 +145,117 @@ navbarMenu(
                tabPanel(
                  title="Konkurssit",
                  #value=bankruptcy_time_series_graph_url,
+                 
+                 tabsetPanel(
+                   tabPanel(title="aikasarja",
+                            sidebarLayout(
+                              sidebarPanel(
+                                
+                                actionButton("kuvankaappaus2", "Kuvankaappaus"),
+                                
+                                img(id="tag311", src="konkurssitag.jpg", style="cursor:pointer;"),
+                                
+                                dateRangeInput01("dates12", "2005-01-01"),
+                                
+                                valueBoxOutput("IndustryChoiceTextBox11", width = 12),
+                                
+                                actionLink("selectallindustries12", label="Valitse kaikki/Poista valinnat"),
+                                
+                                checkboxGroupInput("industries12", "", # Valitse toimialat:
+                                                   industrychoicevec,
+                                                   selected = industrychoicevec),
+                                
+                                valueBoxOutput("RegionChoiceTextBox11", width = 12),
+                                
+                                actionLink("selectallregions12", label="Valitse kaikki/Poista valinnat"),
+                                
+                                checkboxGroupInput("regions12", "", # Valitse maakunnat
+                                                   regionchoicevec,
+                                                   selected = regionchoicevec),
 
-                 sidebarLayout(
+                                checkboxGroupInput("graphchoice12", "Muokkaa Esitystapaa:", c("Palkit", "Liukuva keskiarvo",
+                                                                                              "Indeksöity"), selected=NULL),
+                                radioButtons("muuttuja12", "Valitse tarkasteltava muuttuja (palkit ja kartta):",
+                                             c("työntekijöitä", "yrityksiä"), selected =  "yrityksiä"),
+                                checkboxGroupInput("muuttuja121", "Valitse tarkasteltavat muuttuja (aikasarjat):",
+                                                   c("työntekijöitä", "yrityksiä"), selected =  "yrityksiä"),
+                                plotOutput("FinMapPlot")),
+                              
+                              mainPanel(
+                                fluidRow(
+                                  column(12,align = "center", textOutput("otsikko111")),
+                                  column(12,plotlyOutput("konkurssiAikasarja")),
+                                  column(12,align = "center", textOutput("otsikko112")),
+                                  column(12,plotlyOutput("DecompTimeSeriesRegion")),
+                                  column(12,align = "center", textOutput("otsikko113")),
+                                  column(12,plotlyOutput("DecompTimeSeriesIndustry")),
+                                  fluidRow(valueBoxOutput("emptyvbox7", width = 8), tags$a(
+                                    
+                                    href = "https://pxdata.stat.fi/PxWeb/pxweb/fi/StatFin/StatFin__kony/statfin_kony_pxt_13fb.px/",
+                                    target = "_blank",
+                                    valueBox(
+                                      
+                                      "",
+                                      "Lähde: Tilastokeskus. 13fe -- Konkurssit kuukausittain alueittain ja toimialoittain, 2003M01-2023M05"
+                                      
+                                    )
+                                    
+                                  )
+                                  ))
+                              )
+                            )),
+                 
+                 tabPanel(title="vertaile vuosia", sidebarLayout(
+                   
                    sidebarPanel(
-
-                     actionButton("kuvankaappaus2", "Kuvankaappaus"),
-
-                     img(id="tag311", src="konkurssitag.jpg", style="cursor:pointer;"),
-
-                     dateRangeInput("dates12", "Select dates:",
-                                    start= "1980-01-01",
-                                    end = as.character(Sys.Date())),
-
-                     checkboxGroupInput("industries12", "Valitse toimialat:",
-                                        industrychoicevec,
-                                        selected = industrychoicevec),
-
-                     actionLink("selectallindustries12", label="Valitse kaikki/Poista valinnat"),
-
-                     checkboxGroupInput("regions12", "Valitse maakunnat:",
-                                        regionchoicevec,
-                                        selected = regionchoicevec),
-                     actionLink("selectallregions12", label="Valitse kaikki/Poista valinnat"),
-                     checkboxGroupInput("graphchoice12", "Muokkaa Esitystapaa:", c("Palkit"), selected=NULL),
-                     plotOutput("FinMapPlot")),
-
+                     
+                     valueBoxOutput("YearChoiceTextBox12", width = 12),
+                     
+                     actionLink("selectallyears12", label="Valitse kaikki/Poista valinnat"),
+                     
+                     checkboxGroupInput(inputId = "vuodet12", label="", # Valitse vuodet
+                                  choices = c("2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010",
+                                              "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018",
+                                              "2019", "2020", "2021", "2022", "2023"), 
+                                  selected = c("2019", "2020", "2021", "2022", "2023")),
+                     radioButtons("toimialat12", "Valitse toimiala:",
+                                  c(industrychoicevec, "Yhteensä"),
+                                  selected = "Yhteensä"),
+                     checkboxGroupInput(inputId = "graphchoice122", label = "Muokkaa esitysmuotoa:",
+                                        choices = c("kumulatiivinen summa", "logaritmina"),
+                                        selected = c("kumulatiivinen summa", "logaritmina")),
+                     
+                     radioButtons(inputId = "variablechoice12", label = "Valitse muuttujat",
+                                  choices = c("työntekijöitä", "yrityksiä"), selected = "työntekijöitä")
+                       
+                     ),
+                   
+                   mainPanel(fluidRow(
+                     column(12,align = "center", textOutput("otsikko12")),
+                     column(12, plotlyOutput("konkurssiVuodet"))
+                   ))
+                   
+                   
+                 )),
+                 
+                 tabPanel(title="konkurssien jakauma kokoluokittain", sidebarLayout(
+                   
+                   sidebarPanel(
+                     
+                     radioButtons("toimialat122", "Valitse toimiala:",
+                                  toimialavektori122,
+                                  selected = "toimialat yhteensä")
+                     ),
+                   
                    mainPanel(
+                     
                      fluidRow(
-                       column(12,plotlyOutput("timeSeries")),
-                       column(12,plotlyOutput("DecompTimeSeriesRegion")),
-                       column(12,plotlyOutput("DecompTimeSeriesIndustry")),
-                       fluidRow(valueBoxOutput("emptyvbox7", width = 8), tags$a(
-
-                         href = "https://pxdata.stat.fi/PxWeb/pxweb/fi/StatFin/StatFin__kony/statfin_kony_pxt_13fb.px/",
-                         target = "_blank",
-                         valueBox(
-
-                           "",
-                           "Lähde: Tilastokeskus. 13fe -- Konkurssit kuukausittain alueittain ja toimialoittain, 2003M01-2023M05"
-
-                         )
-
-                       )
-                       ))
-                   )
-                 )
-               ),
+                      column(12, splitLayout(cellWidths = c("60%", "40%"), plotOutput("konkurssijakaumaBarplot"), includeMarkdown("Shiny-demo-markdown-teksti51.md"))),
+                      column(12, splitLayout(cellWidths = c("50%", "50%"), valueBoxOutput("konkurssijakaumaVbox_pienet"), valueBoxOutput("konkurssijakaumaVbox_suuret")))                      
+                 )))
+                   
+                   
+                 ))),
 
 
     ##### MISCALLENIOUS SECTION #####
@@ -232,10 +276,14 @@ navbarMenu(
                      radioButtons(inputId = "choice31", label="Valitse toimiala",
                                   choices = investmentchoices31),
 
-                     checkboxGroupInput("quartals31", "Valitse vuosineljännekset:",
+                     valueBoxOutput("QuartalChoiceTextBox2", width = 12),
+                     
+                     actionLink("selectallquartals31", label="Valitse kaikki/Poista valinnat"),
+                     
+                     checkboxGroupInput("quartals31", "", # Valitse vuosineljännekset:
                                         quartalchoicevec,
                                         selected=quartalcharvec),
-                     actionLink("selectallquartals31", label="Valitse kaikki/Poista valinnat"),
+
                      checkboxGroupInput("graphchoice31", "Valitse esitysmuoto:",
                      "Palkit, vuosineljänneksittäin", selected=NULL)),
 
@@ -279,12 +327,14 @@ navbarMenu(
 
                      selectInput(inputId = "industrychoice32", label="Valitse toimiala:",
                                  choices = TOLcharvec, multiple = FALSE, selectize = FALSE),
+                     
+                     valueBoxOutput("QuartalChoiceTextBox3", width = 12),
+                     
+                     actionLink("selectallyears32", label="Valitse kaikki/Poista valinnat"),
 
-                     checkboxGroupInput("years32", "Valitse vuodet:",
+                     checkboxGroupInput("years32", " ", #"Valitse vuodet:"
                                         yearchoicevec,
                                         selected=yearcharvec),
-
-                     actionLink("selectallyears32", label="Valitse kaikki/Poista valinnat"),
 
                      checkboxGroupInput(inputId = "graphchoice32", "Muokkaa esitysmuotoa:",
                                         c("Samassa kuvaajassa", "Näytä vuosineljännekset", "Näytä normalisoitu vaihtuvuus (kartta)", "Aikasarjana",
@@ -292,6 +342,7 @@ navbarMenu(
                                         selected = c("Näytä vuosineljännekset", "Näytä normalisoitu vaihtuvuus (kartta)")),
                      fluidRow(
                        column(12, plotlyOutput("yearlyentryexit1")),
+                       column(12, includeMarkdown("Shiny-demo-markdown-teksti3.md")),
                        column(12, plotOutput("turnoverMap"))
                      )),
 
@@ -339,23 +390,32 @@ navbarMenu(
                        selected = variablechoicevec33[1], multiple = FALSE, selectize = FALSE),
 
                      checkboxGroupInput(inputId = "graphchoice33", "Muokkaa esitysmuotoa:",
-                                        c("Näytä suhteelliset lukumäärät (yritykset)"))),
+                                        c("Näytä osuus yrityskannasta (tukea saaneiden yritysten lukumäärä)",
+                                          "Näytä osuus toimialalle tietyssä vuosineljänneksessä maksetuista tuista"),
+                                        selected = NULL),
+                     
+                     includeMarkdown("yritystuet_sidebar_teksti.md")),
 
                    mainPanel(
+                     
+                     
 
-                     fluidRow(column(12,plotlyOutput("subsidyPlot", height="100%"))),
+                     fluidRow(
+                       column(12,align = "center", textOutput("otsikko4")),
+                       column(12,plotlyOutput("subsidyPlot", height="100%"))),
+                     
                      fluidRow(valueBoxOutput("emptyvbox3", width = 8), tags$a(
 
-                       href = "https://stat.fi/tilasto/aly",
+                       href = "https://stat.fi/tilasto/yrtt",
                        target = "_blank",
                        valueBox(
 
                          "",
-                         "Lähde: Tilastokeskus, Aloittaneet ja lopettaneet yritykset"
+                         "Lähde: Tilastokeskus, Yritystukitilasto"
 
                        )
 
-                     )))
+                     ))) 
                  )
                ),
 
@@ -370,6 +430,8 @@ navbarMenu(
                      actionButton("kuvankaappaus6", "Kuvankaappaus"),
 
                      img(id="tag134", src="yritystag.jpg", style="cursor:pointer;"),
+                     
+                     dateRangeInput01("dates34", "2010-01-01"),
 
                      selectInput(inputId = "industrychoice34", label="Valitse toimiala:", choices = TOLchoicevec34,
                                  selected = TOLchoicevec34[1], multiple = FALSE, selectize = FALSE),
@@ -384,6 +446,7 @@ navbarMenu(
                    mainPanel(
 
                      fluidRow(
+                       column(12,align = "center", textOutput("otsikko5")),
                        column(12,plotlyOutput("revenuePlot", height="100%"))),
                      fluidRow(valueBoxOutput("emptyvbox4", width = 8), valueBoxOutput("Lähde34", width = 4)))
                )
@@ -404,27 +467,28 @@ navbarMenu(
 
                        img(id="tag521", src="tuottavuustag.jpg", style="cursor:pointer;"),
 
-                       selectInput("years4", "Valitse vuodet:",
+                       selectInput("years4", "Valitse vuosi:",
                                    choices = c("2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021"),
                                    selected = "2013", multiple = FALSE, selectize = FALSE),
-
-                       checkboxGroupInput("industries", "Select Industries:",
-                                          industrychoicevec,
-                                          selected = industrycharvec),
-
-                       actionLink("selectallindustries", label="Select/Deselect all industries"),
-
-                       checkboxGroupInput("regions", "Select Regions:",
-                                          regionchoicevec,
-                                          selected = regioncharvec),
-                       actionLink("selectallregions", label="Select/Deselect all regions"),
-                       checkboxGroupInput("graphchoice22", "Muokkaa esitysmuotoa:", "Trendi", selected = NULL),
+                      
+                      radioButtons("toimialat4", "Valitse toimiala:",
+                                        toimialat4, selected = "Teollisuus"),
+                      
+                       checkboxGroupInput("graphchoice22", "Muokkaa esitysmuotoa:", c("Trendi", "Havaintojen lukumäärällä painotettu trendi"), selected = NULL),
+                      radioButtons("graphchoice221", "Tarkastele tuottavuuksia", c("maakunnittain", "toimialoittain"), 
+                                   selected = "maakunnittain"),
+                      includeMarkdown("Shiny-demo-markdown-teksti6.md"),
                      plotOutput("prodmap")),
 
                      mainPanel(
                        fluidRow(
+                         column(12,align = "center", textOutput("otsikko61")),
                          column(12, plotlyOutput("productivityTurnoverScatter")),
-                         column(12, plotlyOutput("productivityBankruptcyScatter"))
+                         column(12,align = "center", textOutput("otsikko62")),
+                         column(12, plotlyOutput("productivityBankruptcyScatter")),
+                         column(12,align = "center", textOutput("otsikko63")),
+                         column(12, splitLayout(cellWidths = c("50%", "50%"), 
+                                                plotOutput("konkurssiBoxplotit"), includeMarkdown("Shiny-demo-markdown-teksti22.md")))
                        )
                      )
                    )
@@ -497,8 +561,49 @@ navbarMenu(
       column(12, img(id="tuottavuushistogrammi1", src="tuottavuushistogrammi.jpg", style="cursor:pointer;"), useShinyjs()),
       column(12, img(id="tuottavuuskartta2", src="tuottavuuskartta.jpg", style="cursor:pointer;"), useShinyjs())),
 
-      )
+      ),
+
+#tags$head(tags$style("#otsikko01{color: black; 
+#                     font-size: 20px; 
+#                     font-style: bold;}")),
+tags$head(tags$style("#otsikko02{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko03{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko04{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko111{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),					
+tags$head(tags$style("#otsikko112{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko113{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko12{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko4{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko5color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko61{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko62{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}")),
+tags$head(tags$style("#otsikko63{color: black; 
+                     font-size: 20px; 
+                     font-style: bold;}"))
 )
+}
 
 
 
@@ -565,7 +670,7 @@ server <- function(input, output, session) {
   shinyjs::onclick("aloittaneetjalopettaneet2", updateNavbarPage(session, inputId="navbarID", selected="Aloittaneet ja Lopettaneet Yritykset"))
   shinyjs::onclick("tuottavuuskartta1", updateNavbarPage(session, inputId="navbarID", selected="Productivity Map"))
 
-  shinyjs::onclick("konkurssit", updateNavbarPage(session, inputId="navbarID", selected="Bankrupty Time Series (Graph)"))
+  shinyjs::onclick("konkurssit", updateNavbarPage(session, inputId="navbarID", selected="Konkurssit"))
 
   shinyjs::onclick("tuottavuussarja1", updateNavbarPage(session, inputId="navbarID", selected="Productivity Time Series (Graph)"))
   shinyjs::onclick("tuottavuuspalkit1", updateNavbarPage(session, inputId="navbarID", selected="Productivity Time Series (Bar)"))
@@ -605,8 +710,6 @@ server <- function(input, output, session) {
 
   })
 
-
-
   ##### SELECT ALL HISTOGRAM #####
 
 
@@ -633,9 +736,25 @@ server <- function(input, output, session) {
     }
   })
 
-  ##### SELECT ALL BARPLOT #####
+  ##### SELECT ALL YEARS id 12 #####
 
-
+  observe({
+    
+    if(input$selectallyears12 == 0) {return(NULL)}
+    else if (input$selectallyears12%%2 == 0){
+      updateCheckboxGroupInput(session,"vuodet12", "",choices=c("2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010",
+                                                               "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018",
+                                                               "2019", "2020", "2021", "2022", "2023"))
+    } else {
+      updateCheckboxGroupInput(session,"vuodet12", "",choices=c("2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010",
+                                                                "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018",
+                                                                "2019", "2020", "2021", "2022", "2023"),
+                                                   selected = c("2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010",
+                                                                "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018",
+                                                                "2019", "2020", "2021", "2022", "2023"))
+    }
+    
+  })
 
   ##### SELECT ALL QUARTALS #####
 
@@ -654,10 +773,10 @@ server <- function(input, output, session) {
   observe({
     if (input$selectallyears32 == 0) {return(NULL)}
     else if (input$selectallyears32%%2==0) {
-      updateCheckboxGroupInput(session,"years32", "Valitse vuosineljännekset:",choices=yearchoicevec)
+      updateCheckboxGroupInput(session,"years32", " ",choices=yearchoicevec) #"Valitse vuosineljännekset:"
     }
     else  {
-      updateCheckboxGroupInput(session,"years32", "Valitse vuosineljännekset:",choices=yearchoicevec,selected=yearchoicevec)
+      updateCheckboxGroupInput(session,"years32", " ",choices=yearchoicevec,selected=yearchoicevec) #"Valitse vuosineljännekset:"
     }
   })
 
@@ -673,121 +792,343 @@ server <- function(input, output, session) {
                                        yritystuet = as.numeric(relevantinterestdata$hits[relevantinterestdata$keyword == "yritystuet"]), ansiosidonnainen = as.numeric(relevantinterestdata$hits[relevantinterestdata$keyword == "ansiosidonnainen"]))
 
   })
+  
+  data120 <- reactive ({
+    
+    data <- BRCfin
+    
+    #data %<>% as.data.frame()
+    
+    #data %<>% month_wrangler()
+    
+    data$yrityksiä %<>% as.numeric()
+    data$työntekijöitä %<>% as.numeric()
+    
+    colnames(data) <- c("vuosi", "TOL", "alue", "yrityksiä", "työntekijöitä")
+    
+    data <- data %>% select(c("vuosi", "TOL", "alue", input$variablechoice12))
+    
+    data <- data[!(data$alue == "MK01 Uusimaa" & data$alue == "MK21 Ahvenanmaa"),]
+    
+    years <- c("2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010",
+               "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018",
+               "2019", "2020", "2021", "2022", "2023") #input$vuodet12
+    
+    TOL <- input$toimialat12
+    
+    df <- data[substr(as.character(data$vuosi), 1, 4) == years[1] & data$alue == "KOKO MAA" & data$TOL == TOL,]
+    
+    for (i in 1:length(years)) {
+      
+      if (nrow(data[substr(as.character(data$vuosi), 1, 4) == years[i] & data$alue == "KOKO MAA" & data$TOL == TOL,]) < 12) {
+        
+        temp <- data[substr(as.character(data$vuosi), 1, 4) == years[i] & data$alue == "KOKO MAA" & data$TOL == TOL,]
+
+        temp <- temp[,4]
+
+        #temp %<>% unlist()
+        
+        temp <- c(temp, c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA))
+        
+        temp <- temp[1:12]
+        
+        if (is.element("kumulatiivinen summa", input$graphchoice122)) {
+          
+          temp %<>% cumsum()
+          
+        }
+        
+        if (is.element("logaritmina", input$graphchoice122)) {
+          
+          temp %<>% log()
+          
+        }
+        
+      } else {
+        
+        temp <- data[substr(as.character(data$vuosi), 1, 4) == years[i] & data$alue == "KOKO MAA" & data$TOL == TOL,]
+        
+        temp <- temp[,4]
+        
+        #temp %<>% unlist()
+        
+        #temp <- data[substr(as.character(data$vuosi), 1, 4) == years[i] & data$alue == "KOKO MAA" & data$TOL == TOL,]$n
+        
+        if (is.element("kumulatiivinen summa", input$graphchoice122)) {
+          
+          temp %<>% cumsum()
+          
+        }
+        
+        if (is.element("logaritmina", input$graphchoice122)) {
+          
+          temp %<>% log()
+          
+        }
+      
+      
+      }
+      
+      df <- cbind(df, temp)
+      
+    }
+    
+    colnames(df) <- c(c("vuosi", "TOL", "maakunta", input$variablechoice12), years)
+    
+    df <- df[, names(df)[names(df) %in% c(input$vuodet12, "vuosi")]]
+    
+    df$vuosi <- substr(df$vuosi, 6, 10)
+    df$vuosi <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+    
+    #df$vuosi <- format(df$vuosi, "%m-%d")
+    #df$vuosi <- c("tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", "heinäkuu", "elokuu", "syyskuu", "lokakuu", "marraskuu", "joulukuu")
+    
+    print(df)
+    
+    return(df)
+    
+  })
 
   data121 <- reactive ({
+    
+    data <- BRCfin
 
-    BRCfin %<>% months_to_quartals()
+    data <- data[(data$TOL != "Yhteensä") & (data$maakunta != "KOKO MAA")& (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
 
-    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "KOKO MAA")& (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    data$yrityksiä %<>% as.numeric()
+    data$työntekijöitä %<>% as.numeric()
 
-    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.POSIXct(input$dates12[1])) & (data$date < as.POSIXct(input$dates12[2])),]
+    
+    data_yrityksiä <- aggregate(yrityksiä~date, data=data, FUN=sum)
+    data_työntekijöitä <- aggregate(työntekijöitä~date, data=data, FUN=sum)
+    
+    data <- join(data_yrityksiä, data_työntekijöitä, by = "date")
+    
+    if (length(input$muuttuja121) == 1) {
+      
+      data <- aggregate(formula(paste0(input$muuttuja121, "~date")), data = data, FUN = "sum")
+      
+    } else if (is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+      
+      data_yrityksiä <- aggregate(yrityksiä~date, data=data, FUN=sum)
+      data_työntekijöitä <- aggregate(työntekijöitä~date, data=data, FUN=sum)
+      
+      data <- join(data_yrityksiä, data_työntekijöitä, by = "date")
+      
+    }
 
-    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
-    BRCfin <- aggregate(nobs~time, data=BRCfin, FUN=sum)
-
-    return(BRCfin)
+    return(data)
 
   })
 
   data122 <- reactive ({
+    
+    data <- BRCfin
 
-    BRCfin %<>% months_to_quartals()
+    data <- data[(data$maakunta != "KOKO MAA") & (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
 
-    BRCfin <- BRCfin[(BRCfin$maakunta != "KOKO MAA") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    data$yrityksiä %<>% as.numeric()
+    data$työntekijöitä %<>% as.numeric()
 
-    BRCfin$nobs <- as.numeric(BRCfin$nobs)
-
-    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
-
-    return(BRCfin)
+    data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.Date(input$dates12[1])) & (data$date < as.Date(input$dates12[2])),]
+    
+    return(data)
 
   })
 
   data123 <- reactive ({
 
-    BRCfin %<>% months_to_quartals()
+    data <- BRCfin
 
-    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    data <- data[(data$TOL != "Yhteensä") & (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
 
-    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    data$yrityksiä %<>% as.numeric()
+    data$työntekijöitä %<>% as.numeric()
 
-    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
-
-    return(BRCfin)
+    data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.Date(input$dates12[1])) & (data$date < as.Date(input$dates12[2])),]
+  
+    return(data)
 
   })
 
   data124 <- reactive ({
 
-    BRCfin %<>% month_wrangler()
+    data <- BRCfin
+    
+    #data %<>% month_wrangler()
 
-    BRCfin <- BRCfin[(BRCfin$maakunta != "KOKO MAA") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    data <- data[(data$maakunta != "KOKO MAA") & (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
 
-    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    data$yrityksiä %<>% as.numeric()
+    data$työntekijöitä %<>% as.numeric()
 
-    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.Date(input$dates12[1])) & (data$date < as.Date(input$dates12[2])),]
+      
+    data_yrityksiä <- aggregate(yrityksiä~date, data=data, FUN="sum")
+    data_työntekijöitä <- aggregate(työntekijöitä~date, data=data, FUN="sum")
+    
+    data <- join(data_yrityksiä, data_työntekijöitä, by = "date")
 
-    BRCfin <- aggregate(nobs~time, data=BRCfin, FUN=sum)
-
-    return(BRCfin)
+    return(data)
 
   })
 
   data125 <- reactive ({
 
-    BRCfin %<>% month_wrangler()
+    data <- BRCfin
 
-    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    data <- data[(data$TOL != "Yhteensä") & (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
 
-    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    data$yrityksiä %<>% as.numeric()
+    data$työntekijöitä %<>% as.numeric()
 
-    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.Date(input$dates12[1])) & (data$date < as.Date(input$dates12[2])),]
 
-    BRCfin <- aggregate(nobs~time, data=BRCfin, FUN=sum)
+    data_yrityksiä <- aggregate(yrityksiä~date, data=data, FUN="sum")
+    data_työntekijöitä <- aggregate(työntekijöitä~date, data=data, FUN="sum")
+    
+    data <- join(data_yrityksiä, data_työntekijöitä, by = "date")
 
-    return(BRCfin)
+    return(data)
 
+  })
+  
+  data126 <- reactive({
+    
+    data <- BRCfin
+    data <- data[(data$maakunta != "KOKO MAA") & (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
+    data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.Date(input$dates12[1])) & (data$date < as.Date(input$dates12[2])),]
+    
+    decomp <- data.frame(time=unique(data$date))
+    
+    BRCfinmod <- BRCfin
+    
+    #print("BRCfinmod from data126")
+    
+    #print(BRCfinmod)
+    
+    if (!is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+      
+      for (i in 1:length(input$regions12)) {
+      
+        decomp <- cbind(decomp, as.numeric(BRCfinmod$yrityksiä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]))
+        
+      }
+    
+    } else if (is.element("työntekijöitä", input$muuttuja121) & !is.element("yrityksiä", input$muuttuja121)) {
+      
+      for (i in 1:length(input$regions12)) {
+      
+        decomp <- cbind(decomp, as.numeric(BRCfinmod$työntekijöitä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]))
+        
+      }
+    
+    } else if (is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+      
+      for (i in 1:length(input$regions12)) {
+        
+        decomp <- cbind(decomp, as.numeric(BRCfinmod$yrityksiä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]),
+                        as.numeric(BRCfinmod$työntekijöitä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]))
+      
+      }
+    
+    }
+    
+    return(decomp)
+  
+  })
+    
+    data127 <- reactive({
+      
+      data <- BRCfin
+      data <- data[(data$maakunta != "KOKO MAA") & (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
+      data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.Date(input$dates12[1])) & (data$date < as.Date(input$dates12[2])),]
+      
+      decomp <- data.frame(time=unique(data$date))
+      
+      BRCfinmod <- BRCfin
+      
+      #print("BRCfinmod from data126")
+      
+      #print(BRCfinmod)
+      
+      if (!is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+        
+        for (i in 1:length(input$industries12)) {
+          
+          decomp <- cbind(decomp, as.numeric(BRCfinmod$yrityksiä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]))
+          
+        }
+        
+      } else if (is.element("työntekijöitä", input$muuttuja121) & !is.element("yrityksiä", input$muuttuja121)) {
+        
+        for (i in 1:length(input$industries12)) {
+          
+          decomp <- cbind(decomp, as.numeric(BRCfinmod$työntekijöitä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]))
+          
+        }
+        
+      } else if (is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+        
+        for (i in 1:length(input$industries12)) {
+          
+          decomp <- cbind(decomp, as.numeric(BRCfinmod$yrityksiä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]),
+                          as.numeric(BRCfinmod$työntekijöitä[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$date > input$dates12[1] & BRCfinmod$date < input$dates12[2]]))
+          
+        }
+        
+      }
+      
+      return(decomp)
+    
   })
 
   data14 <- reactive ({
 
-    BRCfin %<>% month_wrangler()
+    data <- BRCfin
 
-    BRCfin <- join(BRCfin, BRCfinsubs, by = "maakunta")
+    data <- join(data, BRCfinsubs, by = "maakunta")
+    
+    #print(BRCfin)
+    
+    #print(BRCfinsubs)
 
-    BRCfin <- BRCfin[(BRCfin$TOL != "Yhteensä") & (BRCfin$maakunta != "KOKO MAA")& (BRCfin$maakunta != "MA1 MANNER-SUOMI") & (BRCfin$maakunta != "MA2 AHVENANMAA"),]
+    data <- data[(data$TOL != "Yhteensä") & (data$maakunta != "KOKO MAA")& (data$maakunta != "MA1 MANNER-SUOMI") & (data$maakunta != "MA2 AHVENANMAA"),]
 
-    BRCfin$nobs <- as.numeric(BRCfin$nobs)
+    data$yrityksiä %<>% as.numeric()
+    data$työntekijöitä %<>% as.numeric()
 
-    BRCfin <- BRCfin[is.element(BRCfin$TOL, input$industries12) & is.element(BRCfin$maakunta, input$regions12) & (BRCfin$time > as.Date(input$dates12[1])) & (BRCfin$time < as.Date(input$dates12[2])),]
+    data <- data[is.element(data$TOL, input$industries12) & is.element(data$maakunta, input$regions12) & (data$date > as.Date(input$dates12[1])) & (data$date < as.Date(input$dates12[2])),]
 
-    BRCfin <- aggregate(nobs~maakunta+nutsname, data=BRCfin, FUN=sum)
+    #data_yrityksiä <- aggregate(yrityksiä~date+maakunta, data=data, FUN="sum")
+    #data_työntekijöitä <- aggregate(työntekijöitä~date+maakunta, data=data, FUN="sum")
+    
+    #data <- join(data_yrityksiä, data_työntekijöitä, by = "date")
 
     for (i in 1:length(BRCfinzeros)) {
 
-      if (is.element(BRCfinzeros$maakunta[i], BRCfin$maakunta) == FALSE) {
+      if (is.element(BRCfinzeros$maakunta[i], data$maakunta) == FALSE) {
 
-        BRCfin <- rbind(BRCfin, BRCfinzeros[i,])
+        data <- rbind(data, BRCfinzeros[i,])
 
       }
 
     }
-
-    return(BRCfin)
-
-  })
-
-  data15 <- reactive ({
-
-    years <- fetchyears(x1=input$dates15[1], x2=input$dates15[2], x3=input$industries15, x4=input$regions15)
-    industries <- fetchindustries(x1=input$dates15[1], x2=input$dates15[2], x3=input$industries15, x4=input$regions15)
-    regions <- fetchregions(x1=input$dates15[1], x2=input$dates15[2], x3=input$industries15, x4=input$regions15)
-    assets <- fetchassets(x1=input$dates15[1], x2=input$dates15[2], x3=input$industries15, x4=input$regions15)
-    data <- data.frame(year = years , industries=industries, regions = regions, assets = assets)
+    
+    data <- aggregate(formula(paste0(input$muuttuja12,"~maakunta+nutsname")), data = data, FUN = "sum")
+    
+    return(data)
 
   })
 
   data31 <- reactive({
+    
+    suppressMessages(
+      
+      investmentchangedata <- readxl::read_excel("data/investoinnitMuutokset.xlsx")
+      
+    )
 
     data <- investmentchangedata[-(19:50),]
 
@@ -867,8 +1208,8 @@ server <- function(input, output, session) {
   data321 <- reactive({
 
     turnoverdata <- entryexitdata
-    turnoverdata <- turnoverdata[-c(1:2),]
-    turnoverdata$kategoria <- zoo::na.locf(turnoverdata$kategoria)
+    #turnoverdata <- turnoverdata[-c(1:2),]
+    #turnoverdata$kategoria <- zoo::na.locf(turnoverdata$kategoria)
     turnoverdata <- turnoverdata[turnoverdata$luokitus == input$industrychoice32,]
     turnoverdata <- turnoverdata[(! grepl("MA1", turnoverdata$kategoria))&(!grepl("MA2", turnoverdata$kategoria)),]
     turnoverdata$turnoverrate <- (as.numeric(turnoverdata$aloittaneet))/(as.numeric(turnoverdata$ntotal)) + (as.numeric(turnoverdata$lopettaneet))/(as.numeric(turnoverdata$ntotal))
@@ -887,7 +1228,36 @@ server <- function(input, output, session) {
   })
 
   data33 <- reactive({
-
+    
+    suppressMessages(
+      
+      handoutdata <- readxl::read_excel('data/yritystuet.xlsx')
+      
+    )
+    
+    handoutdata <- as.data.frame(handoutdata)
+    
+    cnamevec <- c("vuosineljännes","TOL","kokoluokka",variablechoicevec33)
+    
+    handoutdata <- handoutdata[-c(1:2),]
+    handoutdata <- handoutdata[-c(1021:1078),]
+    
+    colnames(handoutdata) <- cnamevec
+    
+    quartallen <- length(which(is.na(handoutdata$vuosineljännes) == FALSE))
+    TOLlen <- length(which(is.na(handoutdata$TOL) == FALSE))
+    
+    quartalgap <- 85
+    TOLgap <- 5
+    
+    handoutdata$vuosineljännes <- zoo::na.locf(handoutdata$vuosineljännes, option="locf")
+    handoutdata$TOL <- zoo::na.locf(handoutdata$TOL, option="locf")
+    
+    handoutdata[handoutdata == "."] <- as.character(0)
+    
+    handoutdata <- handoutdata[handoutdata$kokoluokka != "Kaikki yritykset",]
+    handoutdata <- handoutdata[handoutdata$TOL != "Muut toimialat" & handoutdata$TOL != "Toimiala tuntematon" &
+                                 handoutdata$TOL != "Ei yritystunnusta",]
     muuttujanimi <- as.character(input$variablechoice33)
 
     newcolumn <- c()
@@ -913,7 +1283,35 @@ server <- function(input, output, session) {
 
   })
 
-  data34 <- reactive({
+  data34 <- reactive({ # Revenue data / Liikevaihtoennakot
+    
+    suppressMessages(
+      
+      revenuedata <- readxl::read_excel("data/liikevaihtoennakot.xlsx")
+      
+    )
+    
+    vec34 <- c("(B-E)", "(F)", "(G)", "(HIJLMNRS)")
+    
+    namerow <- revenuedata[3,]
+    
+    for (i in 1:16) {
+      namerow[1+i] <- paste(namerow[1+i], vec34[ceiling(i/4)])
+    }
+    
+    namerow[1] <- "Kuukausi"
+    
+    revenuedata <- revenuedata[-c(1:3),]
+    revenuedata <- revenuedata[-c(160:199),]
+    colnames(revenuedata) <- namerow
+    
+    revenuedata$Kuukausi <- gsub('M', '', revenuedata$Kuukausi)
+    
+    revenuedata$Kuukausi <- as.POSIXct(paste0(as.character(revenuedata$Kuukausi), '01'), format='%Y%m%d')
+    
+    for (i in 2:length(revenuedata[1,])) {
+      revenuedata[,i] <- as.numeric(unlist(revenuedata[,i]))
+    }
 
     data <- as.data.frame(revenuedata)
 
@@ -935,6 +1333,8 @@ server <- function(input, output, session) {
       data <- data
     }
 
+    data <- data[data$Kuukausi > input$dates34[1] & data$Kuukausi < input$dates34[2],]
+
     colnames(data) <- gsub("Trendisarja ", "Trendisarja_", colnames(data))
     colnames(data) <- gsub("Alkuperäinen indeksisarja ", "Alkuperänen_indeksisarja_", colnames(data))
     colnames(data) <- gsub("Työpäiväkorjattu indeksisarja ", "Työpäiväkorjattu_indeksisarja_", colnames(data))
@@ -944,7 +1344,7 @@ server <- function(input, output, session) {
     colnames(data) <- gsub("(B-E)", "Koko_teollisuus", colnames(data))
     colnames(data) <- gsub("(G)", "Koko_kauppa", colnames(data))
     colnames(data) <- gsub("(HIJLMNRS)", "Muut_palvelut", colnames(data))
-
+    
     return(data)
 
   })
@@ -968,7 +1368,7 @@ server <- function(input, output, session) {
 
     data <- aggregateproddf
     data <- data[as.numeric(data$vuosi) == as.numeric(input$years4),]
-    data <- data[,c(1, 2)]
+    #data <- data[,c(1, 2)]
     data <- join(data,BRCfinsubs2,by="maakunta")
 
   })
@@ -998,86 +1398,235 @@ server <- function(input, output, session) {
   data42 <- reactive({
 
     data <- BRCfin
+    
+    data$yrityksiä %<>% as.numeric()
 
     data$year <- as.numeric(substr(data$date, 1, 4))
-    data <- data[data$TOL=="Yhteensä",]
-    data <- data[data$year==input$years4,]
-    data <- aggregate(nobs~maakunta, data=data, FUN=sum)
+ 
+    data$TOL[data$TOL == "Maa-, metsä ja kalatalous"] <- "Maatalous, metsätalous ja kalatalous"
+    data$TOL[data$TOL == "Rakennustoiminta"] <- "Rakentaminen"
+    data$TOL[data$TOL == "Muut palvelut"] <- "Muu palvelutoiminta"
+    data$TOL[data$TOL == "Kauppa"] <- "Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus"
+    data$TOL[data$TOL == "Teollisuus, kaivostoiminta sekä energia- ja vesihuolto"] <- "Teollisuus"
+    
+    data <- data[data$TOL == input$toimialat4 & data$year == input$years4,]
+
+    data <- aggregate(yrityksiä~maakunta, data=data, FUN=sum)
 
     return(data)
 
   })
 
-  diffyears12 <- reactive({
-    return(max(data12()$year)-min(data12()$year))
+  data43 <- reactive({
+    
+    weightedmean_toimialat <- read.csv("data/12072023_weightedmean_toimialat.csv")
+    data <- weightedmean_toimialat[weightedmean_toimialat$vuosi == input$years4,]
+    
   })
-
-  diffyears13 <- reactive({
-    return(max(data13()$year)-min(data13()$year))
+  
+  data44 <- reactive({
+    
+    weightedmean_maakunnat <- read.csv("data/12072023_weightedmean_maakunnat.csv")
+    data <- weightedmean_maakunnat[weightedmean_maakunnat$vuosi == input$years4,]
+    
   })
+  
+  data45 <- reactive({
+    
+    data <- BRCfin
+    
+    data$yrityksiä %<>% as.numeric()
+    
+    data <- data[substr(as.character(data$date), 6, 7) == "12",]
+    
+    data$year <- as.numeric(substr(data$date, 1, 4))
+    
+    data$TOL[data$TOL == "Maa-, metsä ja kalatalous"] <- "Maatalous, metsätalous ja kalatalous"
+    data$TOL[data$TOL == "Rakennustoiminta"] <- "Rakentaminen"
+    data$TOL[data$TOL == "Muut palvelut"] <- "Muu palvelutoiminta"
+    data$TOL[data$TOL == "Kauppa"] <- "Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus"
+    data$TOL[data$TOL == "Teollisuus, kaivostoiminta sekä energia- ja vesihuolto"] <- "Teollisuus"
 
-  trimref <- reactive ({
-
-    trimtop <- (1-as.numeric(input$toptrim11))
-    trimmed <- unname(quantile(data11()$assets, trimtop))
-    return(trimmed)
-
+    data <- data[data$year == input$years4 & data$maakunta == "KOKO MAA",]
+    
+    #print("data45")
+    #print(data)
+    
+    return(data[,c(2, 3, 4, 6)])
+    
   })
-
-  bins <- reactive({
-
-    return(seq(min(data11()$assets, na.rm = TRUE), unname(trimref()), length.out = 50))
-
+  
+  data46 <- reactive({
+    
+    tuottavuus_toimialat <- read.csv("data/22062023_tuottavuus_toimialat.csv")
+    tuottavuus_toimialat <- tuottavuus_toimialat[,-c(1)]
+    tuottavuus_toimialat$toimiala <- iconv(tuottavuus_toimialat$toimiala, from = "ISO-8859-1", to = "UTF-8")
+    tuottavuus_toimialat$maakunta <- iconv(tuottavuus_toimialat$maakunta, from = "ISO-8859-1", to = "UTF-8")
+    tuottavuus_toimialat <- tuottavuus_toimialat[tuottavuus_toimialat$toimiala == input$toimialat4 
+                                                 & tuottavuus_toimialat$vuosi == input$years4,]
+    return(tuottavuus_toimialat)
+    
   })
+  
+  data47 <- reactive({
+    
+    yrityskantadata <- readxl::read_excel("data/aloittaneetLopettaneet.xlsx")
+    colnames(yrityskantadata) <- c("vuosi", "maakunta", "toimiala", "aloittaneet", "lopettaneet", "yrityskanta")
+    yrityskantadata <- yrityskantadata[-c(1, 2),]
+    yrityskantadata$vuosi %<>% zoo::na.locf()
+    yrityskantadata$maakunta %<>% zoo::na.locf()
+    yrityskantadata %<>% na.omit()
+    yrityskantadata <- yrityskantadata[yrityskantadata$maakunta != "KOKO MAA" & yrityskantadata$maakunta != "MA1 MANNER-SUOMI" 
+                                       & yrityskantadata$maakunta != "MA2 AHVENANMAA" & is.na(as.numeric(substr(yrityskantadata$toimiala, 1, 2)))
+                                       & substr(yrityskantadata$vuosi, 5, 6) == "Q4",]
 
-  maxnobs <- reactive ({
+    yrityskantadata$maakunta <- substr(yrityskantadata$maakunta, 6, length(yrityskantadata$maakunta))
+    yrityskantadata$vuosi <- substr(yrityskantadata$vuosi, 1, 4)
 
-    regions <- BRC$fakefinregions
-    finrelevantnobsvec <- numeric(length(mydata$id))
-    for (i in 1:length(mydata$id)) {
-      finrelevantnobsvec[i] <- length(regions[regions == mydata$nutsname[i]])
+    for (i in 1:nrow(yrityskantadata)) {
+      
+      if (is.element(substr(yrityskantadata$toimiala[i], 1, 1), c("L", "O", "P", "D", "U"))) {
+        yrityskantadata$toimiala[i] <- substring(yrityskantadata$toimiala[i], 1, nchar(yrityskantadata$toimiala[i])-5)
+      } else {
+        yrityskantadata$toimiala[i] <- substring(yrityskantadata$toimiala[i], 1, nchar(yrityskantadata$toimiala[i])-8)
+      }
+      
     }
-    maxnobs <- max(finrelevantnobsvec)
-
+    
+    yrityskantadata$toimiala <- substring(yrityskantadata$toimiala, 3)
+    
+    yrityskantadata <- yrityskantadata[,-c(4, 5)]
+    
+    yrityskantadata$vuosi %<>% as.numeric()
+    yrityskantadata$yrityskanta %<>% as.numeric()
+    
+    yrityskantadata$toimiala[yrityskantadata$toimiala == ""] <- "Yhteensä"
+    
+    #print("Yrityskantadata:")
+    #print(yrityskantadata)
+    return(yrityskantadata)
+    
+  })
+  
+  data51 <- reactive({
+    
+    konkurssijakauma <- read.csv("data/14072023_konkurssijakauma_toimialat.csv")
+    konkurssijakauma$toimiala <- iconv(konkurssijakauma$toimiala, from = "ISO-8859-1", to = "UTF-8")
+    
+    #konkurssijakauma <- read.csv("data/19072023_konkurssit_pylväät_86_22.csv")
+    #konkurssijakauma$toimiala <- iconv(konkurssijakauma$toimiala, from = "ISO-8859-1", to = "UTF-8")
+    
+    data <- konkurssijakauma[konkurssijakauma$toimiala == input$toimialat122 ,]
+    
+  })
+  
+  data6 <- reactive({
+    
+    tuottavuusjakauma <- read.csv("data/13072023_toimialat_boxplotit.csv")
+    tuottavuusjakauma$toimiala <- iconv(tuottavuusjakauma$toimiala, from = "ISO-8859-1", to = "UTF-8")
+    
+    data <- tuottavuusjakauma[tuottavuusjakauma$toimiala == input$toimialat4 & tuottavuusjakauma$vuosi == input$years4,] #& data$yritysluokka == "mikroyritys",
+    
+    
   })
 
   ##### DRAW PLOTS #####
 
     ##### BANKRUPTCY GRAPHPLOTS #####
 
-    output$timeSeries <- renderPlotly({
+    output$konkurssiAikasarja <- renderPlotly({
 
-      if (length(input$graphchoice12) == 0) {
+      if (!is.element("Palkit", input$graphchoice12)) {
+        
+        yvar <- "lukumäärä"
 
         data <- data121()
+        
+        if (is.element("Liukuva keskiarvo", input$graphchoice12)) {
+          
+          if (ncol(data) > 2) {
+            
+            data[,-c(1)] <- sapply(data[,-c(1)], function(x) manual_rollmean(x, 12))
+            
+          } else {
+            
+            tempdata <- data[,2]
+            
+            appendvec <- rep(tempdata[1], 12)
+            temp <- c(appendvec, tempdata)
+            
+            for (i in 12:length(temp)) {
+              
+              temp[i] <- mean(temp[(i-12):i])
+              
+            }
+            temp <- temp[c((12+1):length(temp))]
+            data[,2] <- temp
+            
+          }
+          
+        }
+        
+        if (is.element("Indeksöity", input$graphchoice12)) {
+          
+          yvar <- "indeksi"
+          
+          if (ncol(data) > 2) {
+            
+            data[,-c(1)] <- sapply(data[,-c(1)], function(x) indeksöi(x))
+            
+          } else {
+            
+            #data[2] %<>% indeksöi()
+            data[2] <- (data[2]/data[1,2])*100
+            
+          }
+          
+        }
 
-        data <- data %>% dplyr::rename("konkursseja" = "nobs")
+        plot <- timeseries(data, c("Konkurssien määrä"), FALSE, "2003-01-01", randcolor(), "muuttuja", "lukumäärä", "Päivämäärä")
 
-        h <- timeseries(data, c("Konkurssien määrä"), FALSE, "2003-01-01", randcolor(), "muuttuja", "lukumäärä")
-
-      } else if (length(input$graphchoice12) > 0) {
-
-        plot <- ggplot(data121(), aes(x = time, y = nobs)) + geom_bar(stat="identity") + ylab("ylabtxt") + xlab("Vuosi")
+      } else if (is.element("Palkit", input$graphchoice12)) {
+        
+        yvar <- "lukumäärä"
+        
+        data <- data121()
+        
+        #print(data)
+        
+        dfm <- reshape2::melt(data[,colnames(data)],id.vars = 1)
+        
+        #print(dfm)
+        
+        plot <- ggplot(dfm, aes_string(x = colnames(data)[1], y = "value")) + geom_bar(aes(fill = variable), stat="identity", position = "stack") + ylab("ylabtxt") + xlab("Vuosi")
         plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors))
         plot <- plot + geom_hline(yintercept=0, color="red")
-        plot <- plot + ggtitle("Konkurssien määrä")
+        plot <- plot + ggtitle("Konkurssien lukumäärä, konkursseissa työnsä menettäneiden lukumäärä")
         plot <- plot + scale_y_continuous(labels = tuhaterotin)
-
-        plot <- ggplotly(plot)
+        
+        #plot <- decompBars(data121(), "Konkurssien lukumäärä, konkursseissa työnsä menettäneiden lukumäärä")
 
       }
+      
+      plot %<>% ggplotly()
+      
+      plot <- plot %>% layout(font = font1,
+                              yaxis = list(title = yvar),
+                              xaxis = list(title = "Aika"))
 
       })
 
     output$DecompTimeSeriesRegion <- renderPlotly({
-
-      if (length(input$graphchoice12) == 0) {
+      
+      if (!is.element("Palkit", input$graphchoice12)) {
 
         return(bankruptcygraphs(c("Konkurssit, aikasarja, toimialoittain"), FALSE, "maakunta"))
 
-      } else if (length(input$graphchoice12) > 0) {
+      } else if (is.element("Palkit", input$graphchoice12)) {
 
         return(bankruptcygraphs(c("Konkurssit, aikasarja, maakunnittain"), TRUE, "maakunta"))
+        
+        #return(decompBars(data124(), "Konkurssit, aikasarja, maakunnittain"))
 
       }
 
@@ -1085,16 +1634,53 @@ server <- function(input, output, session) {
 
     output$DecompTimeSeriesIndustry <- renderPlotly ({
 
-      if (length(input$graphchoice12) == 0) {
+      if (!is.element("Palkit", input$graphchoice12)) {
 
         return(bankruptcygraphs(c("Konkurssit, aikasarja, maakunnittain"), FALSE, "TOL"))
 
-      } else if (length(input$graphchoice12) > 0) {
+      } else if (is.element("Palkit", input$graphchoice12)) {
 
-        return(bankruptcygraphs(c("Konkurssit, aikasarja, toimialoittain"), TRUE, "TOL"))
+       return(bankruptcygraphs(c("Konkurssit, aikasarja, toimialoittain"), TRUE, "TOL"))
+        
+      #return(decompBars(data125(), "Konkurssit, aikasarja, toimialoittain"))
 
       }
 
+    })
+    
+    output$konkurssiVuodet <- renderPlotly ({
+      
+      if (is.element("kumulatiivinen summa",input$graphchoice122) & is.element("logaritmina",input$graphchoice122)) {
+        yvar <- "kumulatiivinen summa, logaritmi"
+      } else if (!is.element("kumulatiivinen summa",input$graphchoice122) & is.element("logaritmina",input$graphchoice122)) {
+        yvar <- "logaritmi"
+      } else if (is.element("kumulatiivinen summa",input$graphchoice122) & !is.element("logaritmina",input$graphchoice122)) {
+        yvar <- "kumulatiivinen summa"
+      } else if (!is.element("kumulatiivinen summa",input$graphchoice122) & !is.element("logaritmina",input$graphchoice122)) {
+        yvar <- "lukumäärä"
+      }
+
+      plot <- timeseries(data120(), c("Konkurssien määrä: kumulatiivinen summa, logaritmi"), FALSE, "2003-01-01", 
+                        randcolor(), "muuttuja", input$variablechoice12, "Kuukausi")
+      
+      #plot <- plot + scale_x_datetime(breaks = as.POSIXct(data120()$vuosi), labels = month.abb)
+      
+      plot %<>% ggplotly()
+      
+      plot <- plot %>% layout(font = font1,
+                              yaxis = list(title = yvar),
+                              xaxis = list(title = "Kuukausi",
+                                           #ticktext = list("tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", 
+                                            #               "heinäkuu", "elokuu", "syyskuu", "lokakuu", "marraskuu", "joulukuu"),
+                                           #tickvals = list("2003-01-01", "2003-02-01", "2003-03-01", "2003-04-01", "2003-05-01", "2003-06-01",
+                                            #               "2003-07-01", "2003-08-01", "2003-09-01", "2003-10-01", "2003-11-01", "2003-12-01")))
+                                           #ticktext = list("huhtikuu", "heinäkuu", "lokakuu", "joulukuu", ),
+                                           #tickvals = list(data120()$vuosi[4], data120()$vuosi[7], data120()$vuosi[10], data120()$vuosi[12])))
+                                            #ticktext = list("huhtikuu", "heinäkuu", "lokakuu", "joulukuu"),
+                                            #tickvals = list("Jan 2003", "Apr 2003", "Jul 2003", "Oct 2003")))
+                                           ticktext = list("tammikuu","huhtikuu", "heinäkuu", "lokakuu"),
+                                           tickvals = list(1, 4, 7, 10)))
+      
     })
 
     ##### MAPS #####
@@ -1102,10 +1688,14 @@ server <- function(input, output, session) {
     output$FinMapPlot <-renderPlot({
 
       finrelevant <- data14()
-
+      
       mapdf <- join(mydata, finrelevant, by = "nutsname")
+      
+      #print(mapdf)
+      
+      mapdf %<>% na.omit()
 
-      mapplot <- map(mapdf, "nobs", "Konkurssit maakuntatasolla", "Valitut toimialat, valittu aikaväli", "id", 2, 8)
+      mapplot <- map(mapdf, input$muuttuja12, paste0("konkurssien piirissä olevia ",input$muuttuja12), "Valitut toimialat, valittu aikaväli", "id", 2, 8)
 
       plot(mapplot)
 
@@ -1150,9 +1740,10 @@ server <- function(input, output, session) {
       if (length(input$graphchoice31)==0) {
 
         data <- quartal_wrangler(data)
-        plot <- timeseries(data[,c(1,2)], "Investointien muutos (vrt. edellisen vuoden vastaavaan kvartaaliin)", FALSE, "2018-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(data[,c(1,2)], "Investointien muutos (vrt. edellisen vuoden vastaavaan kvartaaliin)", FALSE, 
+                           "2018-01-01", DHcolors, "muuttuja", "lukumäärä", "Päivämäärä")
 
-      } else if (is.element("Palkit", input$graphchoice31)) {
+      } else if (is.element("Palkit, vuosineljänneksittäin", input$graphchoice31)) {
 
         plot <- ggplot(data, aes(x = neljännes, y = vuosimuutos, fill = vuosi))
         plot <- plot + geom_bar(position = "dodge", stat="identity")
@@ -1185,25 +1776,33 @@ server <- function(input, output, session) {
         ggplotly()
       } else if (is.element("Aikasarjana", input$graphchoice32) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
-        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, data32()$aloittaneet, data32()$lopettaneet)), "Aloittaneet ja lopettaneet yritykset, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, data32()$aloittaneet, data32()$lopettaneet)), 
+                           "Aloittaneet ja lopettaneet yritykset, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, 
+                           "muuttuja", "lukumäärä", "Päivämäärä")
       } else if (is.element("Aikasarjana", input$graphchoice32) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
         yearlyentry <- aggregate(aloittaneet~vuosi, data=data32(), FUN=sum)
         yearlyexit <- aggregate(lopettaneet~vuosi, data=data32(), FUN=sum)
         years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
-        plot <- timeseries(quartal_wrangler(data.frame(years, aloittaneet = yearlyentry, lopettaneet = yearlyexit)), "Aloittaneet ja lopettaneet yritykset, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(years, aloittaneet = yearlyentry, lopettaneet = yearlyexit)), 
+                           "Aloittaneet ja lopettaneet yritykset, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, 
+                           "muuttuja", "lukumäärä", "Päivämäärä")
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Aikasarjana", input$graphchoice32))) {
         plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, FALSE, "Yritysten määrän nettomuutos, lukumäärä", TRUE)
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (is.element("Aikasarjana", input$graphchoice32))) {
-        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet - data32()$lopettaneet))), "Yritysten määrän nettomuutos, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet - data32()$lopettaneet))), 
+                           "Yritysten määrän nettomuutos, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, 
+                           "muuttuja", "lukumäärä", "Päivämäärä")
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (is.element("Aikasarjana", input$graphchoice32))) {
         yearlyentry <- aggregate(aloittaneet~vuosi, data=data32(), FUN=sum)
         yearlyexit <- aggregate(lopettaneet~vuosi, data=data32(), FUN=sum)
         years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
-        plot <- timeseries(quartal_wrangler(data.frame(years, nettomuutos = (yearlyentry - yearlyexit))), "Yritysten määrän nettomuutos, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(years, nettomuutos = (yearlyentry - yearlyexit))), 
+                           "Yritysten määrän nettomuutos, lukumäärä, aikasarja", FALSE, "2005-01-01", DHcolors, 
+                           "muuttuja", "lukumäärä", "Päivämäärä")
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Aikasarjana", input$graphchoice32))) {
         plot <- exitentryplot(data32(), FALSE, FALSE, TRUE, FALSE, "Yritysten määrän nettomuutos, lukumäärä", TRUE)
@@ -1231,26 +1830,27 @@ server <- function(input, output, session) {
         ggplotly()
       } else if (is.element("Aikasarjana", input$graphchoice32) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
-        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet/data32()$ntotal), (data32()$lopettaneet/data32()$ntotal))), "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet/data32()$ntotal), (data32()$lopettaneet/data32()$ntotal))), 
+                           "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä", "Päivämäärä")
       } else if (is.element("Aikasarjana", input$graphchoice32) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
         yearlyentry <- aggregate((aloittaneet/ntotal)~vuosi, data=data32(), FUN=sum)
         yearlyexit <- aggregate((lopettaneet/ntotal)~vuosi, data=data32(), FUN=sum)
         years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
-        plot <- timeseries(quartal_wrangler(data.frame(years, aloittaneet = yearlyentry, lopettaneet = yearlyexit)), "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(years, aloittaneet = yearlyentry, lopettaneet = yearlyexit)), "Aloittaneet ja lopettaneet yritykset, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä", "Päivämäärä")
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Aikasarjana", input$graphchoice32))) {
         plot <- exitentryplot(data32(), FALSE, FALSE, FALSE, TRUE, "Yritysten määrän nettomuutos, osuus yrityskannasta", TRUE)
         ggplotly()
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (is.element("Aikasarjana", input$graphchoice32))) {
-        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet/data32()$ntotal) - (data32()$lopettaneet/data32()$ntotal))), "Yritysten määrän nettomuutos, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(data32()$vuosineljännes, (data32()$aloittaneet/data32()$ntotal) - (data32()$lopettaneet/data32()$ntotal))), "Yritysten määrän nettomuutos, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä", "Päivämäärä")
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (is.element("Aikasarjana", input$graphchoice32))) {
         yearlyentry <- aggregate((aloittaneet/ntotal)~vuosi, data=data32(), FUN=sum)
         yearlyexit <- aggregate((lopettaneet/ntotal)~vuosi, data=data32(), FUN=sum)
         years <- c("2013Q1", "2014Q1", "2015Q1", "2016Q1", "2017Q1", "2018Q1", "2019Q1", "2020Q1", "2021Q1", "2022Q1")
-        plot <- timeseries(quartal_wrangler(data.frame(years, nettomuutos = (yearlyentry - yearlyexit))), "Yritysten määrän nettomuutos, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+        plot <- timeseries(quartal_wrangler(data.frame(years, nettomuutos = (yearlyentry - yearlyexit))), "Yritysten määrän nettomuutos, osuus yrityskannasta, aikasarja", FALSE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä", "Päivämäärä")
       } else if ((is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32)) & (!is.element("Näytä vuosineljännekset", input$graphchoice32))
                  & (!is.element("Aikasarjana", input$graphchoice32))) {
         plot <- exitentryplot(data32(), FALSE, TRUE, TRUE, TRUE, "Yritysten määrän nettomuutos, osuuus yrityskannasta", TRUE)
@@ -1270,7 +1870,7 @@ server <- function(input, output, session) {
         plot <- exitentryplot(data32(), FALSE, FALSE, TRUE, FALSE, "Lopettaneet yritykset, lkm, vuosittain", FALSE)
         ggplotly()
       } else if (is.element("Samassa kuvaajassa", input$graphchoice32) | (is.element("Aikasarjana", input$graphchoice32))| (is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
-        plot <- industryturnover(data35())
+        plot <- industryturnover(data35(), input$regionchoice32)
         ggplotly(tooltip=c("x", "fill"))
       }
 
@@ -1302,7 +1902,7 @@ server <- function(input, output, session) {
       if (!is.element("Samassa kuvaajassa", input$graphchoice32) & (!is.element("Aikasarjana", input$graphchoice32))
           & (!is.element("Näytä yritysten määrän nettomuutos", input$graphchoice32))) {
 
-        bar <- industryturnover(data35())
+        bar <- industryturnover(data35(), input$regionchoice32)
 
         ggplotly(tooltip=c("x", "fill"))
 
@@ -1315,125 +1915,542 @@ server <- function(input, output, session) {
     output$subsidyPlot <- renderPlotly({
 
       handoutdata <- data33()
+      
+      if (is.element("Näytä osuus toimialalle tietyssä vuosineljänneksessä maksetuista tuista", input$graphchoice33)) {
+        
+        aggr <- aggregate(num~vuosineljännes, data = handoutdata, FUN = "sum")
+        colnames(aggr) <- c("vuosineljännes", "sum") 
+        handoutdata <- plyr::join(aggr, handoutdata, by = "vuosineljännes")
+        handoutdata$num <- handoutdata$num/handoutdata$sum
+        
+      }
+      
+      #print(handoutdata)
 
       if (is.element(input$variablechoice33, c("Tukea saaneiden yritysten lukumäärä", "Suhdanneheikentymän vuoksi tukea saaneiden yritysten lukumäärä"))) {
 
-        colnames(handoutdata)[1] <-"lukumäärä"
+        #colnames(handoutdata)
+        colnames(handoutdata)[which(names(handoutdata) == "num")] <- "lukumäärä"
         varname <- "lukumäärä"
 
       } else if (is.element(input$variablechoice33, c("Maksetut suorat tuet", "Suhdanneheikentymän vuoksi maksetut suorat tuet"))) {
 
-        colnames(handoutdata)[1] <-"tukea"
+        #colnames(handoutdata)[1] <-"tukea"
+        colnames(handoutdata)[which(names(handoutdata) == "num")] <- "tukea"
         varname <- "tukea"
 
       } else if (is.element(input$variablechoice33, c("Myönnetyt takaukset", "Suhdanneheikentymän vuoksi myönnetyt takaukset"))) {
 
-        colnames(handoutdata)[1] <-"takauksia"
+        #colnames(handoutdata)[1] <-"takauksia"
+        colnames(handoutdata)[which(names(handoutdata) == "num")] <- "takauksia"
         varname <- "takauksia"
 
       } else if (is.element(input$variablechoice33, c("Maksetut lainat", "Suhdanneheikentymän vuoksi maksetut lainat"))) {
 
-        colnames(handoutdata)[1] <-"lainaa"
+        #colnames(handoutdata)[1] <-"lainaa"
+        colnames(handoutdata)[which(names(handoutdata) == "num")] <- "lainaa"
         varname <- "lainaa"
 
       }
+      
 
-      if (grepl("lukumäärä", as.character(input$variablechoice33)) & length(input$graphchoice33)==1) {
-        print(handoutdata)
-       plot <- ggplot(handoutdata, aes_string(x="vuosineljännes", y = varname, fill="kokoluokka")) + xlab("Vuosineljännes") + ylab("Tukea saaneiden yritysten osuus yrityskannasta") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=colorsample(5))
-       plot <- plot + scale_y_continuous(labels = tuhaterotin)
-        ggplotly()
+      if (grepl("lukumäärä", as.character(input$variablechoice33)) & is.element("Näytä osuus yrityskannasta (tukea saaneiden yritysten lukumäärä)", input$graphchoice33)
+          & !is.element("Näytä osuus toimialalle tietyssä vuosineljänneksessä maksetuista tuista", input$graphchoice33)) {
+        
+        ylabtext <- "Tukea saaneiden yritysten osuus yrityskannasta"
+        arg_position <- "dodge"
 
-      } else if (grepl("lukumäärä", as.character(input$variablechoice33)) & length(input$graphchoice33)==0) {
-        print(handoutdata)
-        plot <- ggplot(handoutdata, aes_string(x="vuosineljännes", y =varname, fill="kokoluokka")) + xlab("Vuosineljännes") + ylab("Yritystä") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=colorsample(5))
-        plot <- plot + scale_y_continuous(labels = tuhaterotin)
-        ggplotly()
+      } else if (grepl("lukumäärä", as.character(input$variablechoice33)) & !is.element("Näytä osuus yrityskannasta (tukea saaneiden yritysten lukumäärä)", input$graphchoice33)
+                 & !is.element("Näytä osuus toimialalle tietyssä vuosineljänneksessä maksetuista tuista", input$graphchoice33)) {
+        
+        ylabtext <- "Yritystä"
+        arg_position <- "dodge"
 
       }
 
-      else {
-        print(handoutdata)
-        plot <- ggplot(handoutdata, aes_string(x="vuosineljännes", y = varname, fill="kokoluokka")) + xlab("Vuosineljännes") + ylab("Tuhatta euroa") + geom_bar(position = "dodge", stat="identity") + scale_fill_manual(values=colorsample(5))
+      else if (!is.element("Näytä osuus yrityskannasta (tukea saaneiden yritysten lukumäärä)", input$graphchoice33)
+               & !is.element("Näytä osuus toimialalle tietyssä vuosineljänneksessä maksetuista tuista", input$graphchoice33)) {
+        
+        ylabtext <- "Tuhatta euroa"
+        arg_position <- "dodge"
+
+      } else if (!grepl("lukumäärä", as.character(input$variablechoice33)) & !is.element("Näytä osuus yrityskannasta (tukea saaneiden yritysten lukumäärä)", input$graphchoice33)
+                  & is.element("Näytä osuus toimialalle tietyssä vuosineljänneksessä maksetuista tuista", input$graphchoice33)) {
+        
+        ylabtext <- "Osuus toimialalle maksetuista tuista"
+        arg_position <- "stack"
+        colnames(handoutdata)[which(names(handoutdata) == "num")] <- "osuus"
+        colnames(handoutdata)[which(names(handoutdata) == "lukumäärä")] <- "osuus"
+        colnames(handoutdata)[which(names(handoutdata) == "tukea")] <- "osuus"
+        colnames(handoutdata)[which(names(handoutdata) == "takauksia")] <- "osuus"
+        colnames(handoutdata)[which(names(handoutdata) == "lainaa")] <- "osuus"
+        varname <- "osuus"
+        
+      }
+      
+      #print(handoutdata)
+      
+      if (exists("ylabtext")) {
+        
+        plot <- ggplot(handoutdata, aes_string(x="vuosineljännes", y = varname, fill="kokoluokka")) + xlab("Vuosineljännes") + ylab(ylabtext) + geom_bar(position = arg_position, stat="identity") + scale_fill_manual(values=colorsample(5))
         plot <- plot + scale_y_continuous(labels = tuhaterotin)
         ggplotly()
-
+        
+      } else {
+        
+        return(NULL)
+        
       }
 
     })
 
     output$productivityTurnoverScatter <- renderPlotly({
+      
+      if (input$graphchoice221 == "maakunnittain") {
+        
+        if (input$toimialat4 == "Yhteensä") {
+          data1 <- data44()
+          data1$toimiala <- rep("Yhteensä", rep = nrow(data1))
+          colnames(data1) <- c("maakunta", "vuosi", "tuottavuus", "yrityskanta", "toimiala")
+        } else {
+          data1 <- data46()[,-c(5)]
+          colnames(data1) <- c("maakunta", "vuosi", "toimiala", "tuottavuus")
+          data1 <- merge(x = data1, y = data47(), by.x = c("vuosi", "toimiala", "maakunta"), 
+                        by.y = c("vuosi", "toimiala", "maakunta"))
+          data1 <- data1[data1$toimiala == input$toimialat4 & data1$vuosi == input$years4,]
+          #data1 <- data1[,-c(3)]
+        }
+        
+        data2 <- data321()[, c(1, 2)]
+        data2$kategoria <- substring(data2$kategoria, 6)
+        colnames(data2) <- c("maakunta", "vaihtuvuus")
+        
+        data <- join(data1, data2, by= "maakunta")
+        
+        var <- "maakunta"
+        
+      } else if (input$graphchoice221 == "toimialoittain") {
+        
+        data1 <- data43()
+        data2 <- data35()
+        
+        colnames(data1) <- c("toimiala", "vuosi", "tuottavuus", "yrityskanta")
+        colnames(data2) <- c("toimiala", "vaihtuvuus")
+        
+        for (i in 1:nrow(data2)) {
+          
+          if (is.element(substr(data2$toimiala[i], 1, 1), c("L", "O", "P", "D", "U"))) {
+            data2$toimiala[i] <- substring(data2$toimiala[i], 1, nchar(data2$toimiala[i])-5)
+          } else {
+            data2$toimiala[i] <- substring(data2$toimiala[i], 1, nchar(data2$toimiala[i])-8)
+          }
+          
+        }
+        
+        data2$toimiala <- substring(data2$toimiala, 3)
+        
+        #data2$toimiala <- gsub("[[:punct:]]", "", data2$toimiala)
+        #data2$toimiala <- substring(data2$toimiala, 1, nchar(data2$toimiala)-1) 
+        
+        data <- join(data1, data2, by= "toimiala")
+        
+        #print(data)
+        
+        var <- "toimiala"
+      }
 
-      data1 <- data4()[, c(1, 3)]
-      data2 <- data321()[, c(2, 4)]
+      if (is.element("Trendi", input$graphchoice22) & !is.element("Havaintojen lukumäärällä painotettu trendi", input$graphchoice22)) {
 
-      colnames(data1) <- c("tuottavuus", "NUTS3")
-      colnames(data2) <- c("vaihtuvuus", "NUTS3")
+        plot <- scatterplot(data, c("Yrityskannan vaihtuvuus"), c("vaihtuvuus", "tuottavuus", var, "yrityskanta"), TRUE, FALSE)
 
-      data <- join(data1, data2, by="NUTS3")
+      } else if (!is.element("Trendi", input$graphchoice22)) {
 
-      if (length(input$graphchoice22) != 0) {
+        plot <- scatterplot(data, c("Yrityskannan vaihtuvuus"), c("vaihtuvuus", "tuottavuus", var, "yrityskanta"), FALSE, FALSE)
+    
+      } else if (is.element("Havaintojen lukumäärällä painotettu trendi", input$graphchoice22)) {
+        
+        plot <- scatterplot(data, c("Yrityskannan vaihtuvuus"), c("vaihtuvuus", "tuottavuus", var, "yrityskanta"), FALSE, TRUE)
+        
+      }
 
-        plot <- scatterplot(data, "texts", FALSE, c("vaihtuvuus", "tuottavuus"), TRUE, FALSE)
-
-      } else
-
-        plot <- scatterplot(data, "texts", FALSE, c("vaihtuvuus", "tuottavuus"), TRUE, FALSE)
-
-      ggplotly()
+      ggplotly(plot)
 
     })
 
     output$productivityBankruptcyScatter <- renderPlotly({
+      
+      if (input$graphchoice221 == "maakunnittain") {
+        
+        data42 <- data42()
+        
+        if (input$toimialat4 == "Yhteensä") {
+          data1 <- data44()
+          data1$toimiala <- rep("Yhteensä", rep = nrow(data1))
+          colnames(data1) <- c("maakunta", "vuosi", "tuottavuus", "yrityskanta", "toimiala")
+        } else {
+          data1 <- data46()[,-c(5)]
+          colnames(data1) <- c("maakunta", "vuosi", "toimiala", "tuottavuus")
+          data1 <- merge(x = data1, y = data47(), by.x = c("vuosi", "toimiala", "maakunta"), 
+                         by.y = c("vuosi", "toimiala", "maakunta"))
+          colnames(data1) <- c("vuosi", "toimiala", "maakunta", "tuottavuus", "yrityskanta")
+          #data1 <- data1[data1$toimiala == input$toimialat4 & data1$vuosi == input$years4,]
+          #data1 <- data1[,-c(3)]
+        }
+        colnames(data42) <- c("maakunta", "konkursseja")
+        
+        data42 <- data42[data42$maakunta != "KOKO MAA" & data42$maakunta != "MA1 MANNER-SUOMI" & data42$maakunta != "MA2 AHVENANMAA",]
+        data42$maakunta <- substring(data42$maakunta, 6)
+        
+        #print("data42:")
+        #print(data42)
+        #print(colnames(data42))
+        #print("data1:")
+        #print(data1)
+        #print(colnames(data1))
+        
+        data <- plyr::join(data1, data42, by = "maakunta")
+        data$konkurssitn <- as.numeric(data$konkursseja)/as.numeric(data$yrityskanta)
+        
+        data <- data[!duplicated(colnames(data))]
+        
+        var <- "maakunta"
+        
+      } else if (input$graphchoice221 == "toimialoittain") {
+        
+        data1 <- data43()
+        #print(data45())
+        data2 <- data45()
+        var <- "toimiala"
+        
+        colnames(data1) <- c("toimiala", "vuosi", "tuottavuus", "yrityskanta")
+        colnames(data2) <- c("toimiala", "maakunta", "konkursseja", "vuosi")
+        
+        print(data1)
+        print(data2)
+        
+        #data2$toimiala[data2$toimiala == "Maa-, metsä ja kalatalous"] <- "Maatalous, metsätalous ja kalatalous"
+        #data2$toimiala[data2$toimiala == "Rakennustoiminta"] <- "Rakentaminen"
+        #data2$toimiala[data2$toimiala == "Muut palvelut"] <- "Muu palvelutoiminta"
+        #data2$toimiala[data2$toimiala == "Kauppa"] <- "Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus"
+        #data2$toimiala[data2$toimiala == "Teollisuus, kaivostoiminta sekä energia- ja vesihuolto"] <- "Teollisuus"
+        
+        data <- join(data1, data2, by = "toimiala")
+        
+        data <- data[, c(1, 2, 3, 4, 6)]
+        
+        data$konkurssitn <- as.numeric(data$konkursseja)/as.numeric(data$yrityskanta)
+        
+        print(data)
+        
+      }
 
-      data4 <- data42()
+      if (is.element("Trendi", input$graphchoice22) & !is.element("Havaintojen lukumäärällä painotettu trendi", input$graphchoice22)) {
 
-      data3 <- data41()
+        plot <- scatterplot(data, "konkurssitodennäköisyys (konkurssien lukumäärä/yrityskanta)", c("konkurssitn", "tuottavuus", var, "yrityskanta"), TRUE, FALSE)
 
-      data2 <- data4()
+      } else if (!is.element("Trendi", input$graphchoice22)) {
+        
+        plot <- scatterplot(data, "konkurssitodennäköisyys (konkurssien lukumäärä/yrityskanta)", c("konkurssitn", "tuottavuus", var ,"yrityskanta"), FALSE, FALSE)
+        
+      } else if (is.element("Havaintojen lukumäärällä painotettu trendi", input$graphchoice22)) {
+        
+        plot <- scatterplot(data, c("konkurssitodennäköisyys (konkurssien lukumäärä/yrityskanta)"), c("konkurssitn", "tuottavuus", var, "yrityskanta"), FALSE, TRUE)
+        
+      }                    
 
-      colnames(data4) <- c("maakunta", "konkursseja")
-      colnames(data2) <- c("tuottavuus", "maakunta","nutsname")
+      ggplotly(plot)
+      
 
-      data1 <- join(data4, data3, by="maakunta")
-
-      data1 <- join(BRCfinsubs, data1, by="maakunta")
-
-      data <- join(data1, data2, by="nutsname")
-      data$konkurssiosuus <- data$konkursseja/data$yrityskanta
-
-      data <- data[!duplicated(colnames(data))]
-
-      if (length(input$graphchoice22) != 0) {
-
-        plot <- scatterplot(data, "texts", FALSE, c("konkurssiosuus", "tuottavuus"), TRUE, FALSE)
-
-      } else
-
-        plot <- scatterplot(data, "texts", FALSE, c("konkurssiosuus", "tuottavuus"), TRUE, FALSE)
-
-      ggplotly()
 
     })
+    
+    #output$productivityHistogram <- renderPlotly({
+      
+    #})
 
     ##### REVENUE SERIES #####
 
     output$revenuePlot <- renderPlotly({
 
       revenuedata <- data34()
+      
+      if (is.element("Näytä indeksin perusvuosi", input$graphchoice34)) {
 
-      if (length(input$graphchoice34) == 1) {
+        revenueseries <- timeseries(revenuedata, "Yritysten liikevaihtoennakot, sarja", TRUE, "2015-08-01", c(DHcolors, DHcolors, DHcolors), "muuttuja", "liikevaihto", "Päivämäärä")
 
-        revenueseries <- timeseries(revenuedata, "Yritysten liikevaihtoennakot, sarja", TRUE, "2015-08-01", DHcolors, "muuttuja", "liikevaihto")
+      } else if (!is.element("Näytä indeksin perusvuosi", input$graphchoice34)) {
 
-      } else if (length(input$graphchoice34) == 0) {
+        revenueseries <- timeseries(revenuedata, "Yritysten liikevaihtoennakot, sarja", FALSE, "2015-08-01", c(DHcolors, DHcolors, DHcolors), "muuttuja", "liikevaihto", "Päivämäärä")
 
-        revenueseries <- timeseries(revenuedata, "Yritysten liikevaihtoennakot, sarja", FALSE, "2015-08-01", DHcolors, "muuttuja", "liikevaihto")
-
-      }
+      } 
 
       return(revenueseries)
 
+    })
+    
+    ##### BANKRUPTCY DISTRIBUTIONS #####
+    
+    data52 <- reactive({
+      
+      konkurssijakauma <- read.csv("data/14072023_konkurssijakauma_toimialat.csv")
+      konkurssijakauma$toimiala <- iconv(konkurssijakauma$toimiala, from = "ISO-8859-1", to = "UTF-8")
+      
+      #konkurssijakauma <- read.csv("data/19072023_konkurssit_pylväät_86_22.csv")
+      #konkurssijakauma$toimiala <- iconv(konkurssijakauma$toimiala, from = "ISO-8859-1", to = "UTF-8")
+      
+      data <- konkurssijakauma[konkurssijakauma$toimiala == input$toimialat122,]
+      
+      breaks_diff <- (data$breaks[2] - data$breaks[1])/2
+      
+      data %<>% na.omit()
+      
+      breaks_pituus <- length(data$breaks)
+      
+      data$breaks <- data$breaks + (data$breaks[2] - data$breaks[1])/2
+      
+      data <- data[,-c(1)]
+      
+      breaks <- data$breaks
+      
+      suurin_N <- data$y[breaks_pituus]/sum(data$y, na.rm=TRUE)
+
+      suurin_n <- data$x[breaks_pituus]/sum(data$x, na.rm=TRUE)
+
+      pienin_N <- data$y[1]/sum(data$y, na.rm=TRUE)
+
+      pienin_n <- data$x[1]/sum(data$x, na.rm=TRUE)
+      
+      returnvec <- c(breaks[1], breaks[2], breaks[breaks_pituus-1], breaks[breaks_pituus],
+                     suurin_N, suurin_n, pienin_N, pienin_n, breaks_diff)
+      
+    })
+    
+    output$konkurssijakaumaBarplot <- renderPlot({
+      
+      data <- data51()
+      
+      data %<>% na.omit()
+      
+      data$breaks <- data$breaks + (data$breaks[2] - data$breaks[1])/2 
+      data <- data %>% dplyr::rename("työntekijöitä" = "breaks")
+      
+      plot <- ggplot(data = data, aes(x = työntekijöitä)) + #, y = 0.2*y 
+        geom_bar(aes(y = y/sum(y)), stat= "identity", fill = "red", colour = "red", alpha = 0.2) +
+
+        geom_bar(aes(y = x/sum(x)), stat= "identity", fill = "blue", colour = "blue", alpha = 0.2) + 
+        #ggrepel::geom_text_repel(aes(y = y/sum(y), label = round(y/sum(y), digits = 3)), colour = "red") + #, vjust = -0.2 
+        #ggrepel::geom_text_repel(aes(y = y/sum(y), label = round(x/sum(x), digits = 3)), colour = "blue") + #, vjust = -1.2
+        
+        geom_text(aes(y = x/sum(x), label = round(y/sum(y), digits = 3)), colour = "red", vjust = -2.5) + # 
+        geom_text(aes(y = x/sum(x), label = round(x/sum(x), digits = 3)), colour = "blue", vjust = -1) + # 
+        
+        scale_y_continuous(
+          #name= "yritysten lkm",
+          name= "",
+          limits = c(0, 1.1),
+          #sec.axis = sec_axis(~., name = "työntekijöiden lkm"),
+        ) + 
+        
+        scale_x_continuous(
+          breaks = pad_breaks(data$työntekijöitä + (data$työntekijöitä[2] - data$työntekijöitä[1])/2),
+        )
+      
+      print("Not padded:")
+      print(data$työntekijöitä + (data$työntekijöitä[2] - data$työntekijöitä[1])/2)
+      
+      print("Padded:")
+      print(pad_breaks(data$työntekijöitä + (data$työntekijöitä[2] - data$työntekijöitä[1])/2))
+      
+      return(plot)
+      
+    })
+    
+    output$konkurssijakaumaVbox_pienet <- renderValueBox({
+      
+      data <- data52()
+      
+      valueBox(
+        
+        paste0("Pienimmässä kokoluokassa (", as.character(data[1]-data[9]), "-", as.character(data[1]+data[9]),
+               " työntekijää):"), 
+        
+        paste0(as.character(signif(100*data[8], 3)), "% konkursseista, ", as.character(signif(100*data[7], 3)),
+               "% konkursseissa työnsä menettänyttä")
+        
+      )
+      
+    })
+    
+    output$konkurssijakaumaVbox_suuret <- renderValueBox({
+      
+      data <- data52()
+      
+      valueBox(
+        
+        paste0("Suurimmassa kokoluokassa (", as.character(data[4]-data[9]), "-", as.character(data[4]+data[9]),
+               " työntekijää):"), 
+        
+        paste0(as.character(signif(100*data[6], 3)), "% konkursseista, ", as.character(signif(100*data[5], 3)),
+               "% konkursseissa työnsä menettänyttä")
+        
+      )
+      
+    })
+    
+    output$IndustryChoiceTextBox11 <- renderValueBox({
+      
+      valueBox(
+        
+        "",
+        
+        tags$p("Valitse toimialat:", style = "font-weight:bold")
+        
+      )
+      
+    })
+    
+    output$RegionChoiceTextBox11 <- renderValueBox({
+      
+      valueBox(
+        
+        "",
+        
+        tags$p("Valitse maakunnat:", style = "font-weight:bold")
+        
+      )
+      
+    })
+    
+    output$YearChoiceTextBox12 <- renderValueBox({
+      
+      valueBox(
+        
+        "",
+        
+        tags$p("Valitse vuodet:", style = "font-weight:bold")
+        
+      )
+      
+    })
+    
+    output$YearChoiceTextBox12 <- renderValueBox({
+      
+      valueBox(
+        
+        "",
+        
+        tags$p("Valitse vuodet:", style = "font-weight:bold")
+        
+      )
+      
+    })
+    
+    output$QuartalChoiceTextBox2 <- renderValueBox({
+      
+      valueBox(
+        
+        "",
+        
+        tags$p("Valitse vuosineljännekset:", style = "font-weight:bold")
+        
+      )
+      
+    })
+    
+    output$QuartalChoiceTextBox3 <- renderValueBox({
+      
+      valueBox(
+        
+        "",
+        
+        tags$p("Valitse vuosineljännekset:", style = "font-weight:bold")
+        
+      )
+      
+    })
+    
+    output$YearChoiceTextBox12 <- renderValueBox({
+      
+      valueBox(
+        
+        "",
+        
+        tags$p("Valitse vuodet:", style = "font-weight:bold")
+        
+      )
+      
+    })
+    
+    output$otsikko01 <- renderValueBox({
+      
+      valueBox(
+        "Konkurssien määrä; yritykset (punainen) ja työntekijät (sininen)",
+        "Indeksoitu, liukuva keskiarvo"
+      )
+      
+    })
+    
+    #output$otsikko01 <- renderText({"Konkurssien määrä; yritykset (punainen) ja työntekijät (sininen)"})
+    
+    output$otsikko02 <- renderText({"Palkkasummaindeksi. Koko maa, kaikki toimialat"})
+    
+    output$otsikko03 <- renderText({"Kuluttajahintaindeksi"})
+    
+    output$otsikko04 <- renderText({"Teollisuuden tuotantosuhdanneindeksi"})
+    
+    #output$otsikko111 <- renderText({paste0("Konkurssien piirissä olevia ", input$muuttuja12)})
+    
+    #output$otsikko112 <- renderText({paste0("Konkurssien piirissä olevia ", input$muuttuja12, ": toimialoittain")})
+    
+    #output$otsikko113 <- renderText({paste0("Konkurssien piirissä olevia ", input$muuttuja12, ": maakunnittain")})
+    
+    output$otsikko111 <- renderText({paste0("Konkursseja (", input$muuttuja121, "), toimialoittain")})
+    
+    output$otsikko112 <- renderText({paste0("Konkursseja ( ", input$muuttuja121, ") toimialoittain")})
+    
+    output$otsikko113 <- renderText({paste0("Konkursseja (", input$muuttuja121, ") maakunnittain")})
+    
+    output$otsikko12 <- renderText({"Konkurssien vuosittainen kehitys"})
+    
+    output$otsikko4 <- renderText({paste0(input$variablechoice33, ": ", input$industrychoice33)})
+    
+    output$otsikko5 <- renderText({"Yritysten liikevaihtoennakot: aikasarjoja"})
+
+    output$otsikko61 <- renderText({paste0("Sirontakuvio: tuottavuus ja yrityskannan vaihtuvuus ", input$graphchoice221)})
+    
+    output$otsikko62 <- renderText({paste0("Sirontakuvio: tuottavuus ja konkurssin todennäköisyys ", input$graphchoice221)})
+    
+    output$otsikko63 <- renderText({"Yritysten tuottavuusjakauma kokoluokittain"})
+    
+    output$konkurssiBoxplotit <- renderPlot({
+      
+      
+      tags$p("Valitse toimialat:", style = "font-weight:bold")
+      data <- data6()
+      
+      #print(data6())
+      
+      data$kokoluokka <- factor(data$kokoluokka, levels = c("mikroyritys","pienyritys", "keskisuuri yritys", "suuryritys"))
+      
+      plot <- ggplot(data,
+       aes(kokoluokka)
+      )
+      
+      plot <- plot + 
+        geom_boxplot(
+          aes(
+            min = y_min,
+            lower = y_25,
+            middle = y_median,
+            upper = y_75,
+            max = y_max
+          ), colour = "black", width = 0.75, stat = "identity"
+        )
+      
+      return(plot)
+      
+      #ggplotly()
+      
     })
 
     ##### FIRM TYPE TREEMAP #####
@@ -1476,7 +2493,7 @@ server <- function(input, output, session) {
 
       data <- data01()
 
-      plot <- timeseries(data, "Tiettyihin asiasanoihin kohdistuvat Google-haut", FALSE, "2005-01-01", DHcolors2, "muuttuja", "kiinnostus")
+      plot <- timeseries(data, "Tiettyihin asiasanoihin kohdistuvat Google-haut", FALSE, "2005-01-01", DHcolors2, "muuttuja", "kiinnostus", "Päivämäärä")
 
     })
 
@@ -1484,7 +2501,13 @@ server <- function(input, output, session) {
 
       konkurssisarja <- time_series_wrangler(konkurssisarja)
 
-      plot <- timeseries(konkurssisarja, "Konkurssit", TRUE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä")
+      plot <- timeseries(konkurssisarja, "Konkurssit", TRUE, "2005-01-01", DHcolors, "muuttuja", "lukumäärä", "Päivämäärä")
+      
+      plot %<>% ggplotly()
+      
+      plot <- plot %>% layout(showlegend = FALSE,
+                              yaxis = list(title = "indeksi"),
+                              xaxis = list(title = "aika"))
 
     })
 
@@ -1494,7 +2517,13 @@ server <- function(input, output, session) {
 
       colnames(kuluttajahintaindeksi)[2] <- "indeksi"
 
-      plot <- timeseries(kuluttajahintaindeksi, "Kuluttajahintaindeksi", TRUE, "2005-01-01", DHcolors, "muuttuja", "indeksi")
+      plot <- timeseries(kuluttajahintaindeksi, "Kuluttajahintaindeksi", TRUE, "2005-01-01", DHcolors, "muuttuja", "indeksi", "Päivämäärä")
+      
+      plot %<>% ggplotly()
+      
+      plot <- plot %>% layout(showlegend = FALSE,
+                              yaxis = list(title = "indeksi"),
+                              xaxis = list(title = "aika"))
 
     })
 
@@ -1504,7 +2533,13 @@ server <- function(input, output, session) {
 
       colnames(palkkasummaindeksi)[2] <- "indeksi"
 
-      plot <- timeseries(palkkasummaindeksi, "Palkkasumma, indeksisarja", TRUE, "2015-01-01", DHcolors, "muuttuja", "indeksi")
+      plot <- timeseries(palkkasummaindeksi, "Palkkasumma, indeksisarja", TRUE, "2015-01-01", DHcolors, "muuttuja", "indeksi", "Päivämäärä")
+      
+      plot %<>% ggplotly()
+      
+      plot <- plot %>% layout(showlegend = FALSE,
+                              yaxis = list(title = "indeksi"),
+                              xaxis = list(title = "aika"))
 
     })
 
@@ -1514,10 +2549,16 @@ server <- function(input, output, session) {
 
       colnames(tuotantosuhdanneindeksi)[2] <- "indeksi"
 
-      plot <- timeseries(tuotantosuhdanneindeksi, "tuotantosuhdanne, indeksisarja", TRUE, "2015-01-01", DHcolors, "muuttuja", "indeksi")
+      plot <- timeseries(tuotantosuhdanneindeksi, "tuotantosuhdanne, indeksisarja", TRUE, "2015-01-01", DHcolors, "muuttuja", "indeksi", "Päivämäärä")
+      
+      plot %<>% ggplotly()
+      
+      plot <- plot %>% layout(showlegend = FALSE,
+                              yaxis = list(title = "indeksi"),
+                              xaxis = list(title = "aika"))
 
     })
-
+    
     ##### EMPTY VALUE BOXES FOR FORMATTING #####
 
     output$emptyvbox <- renderValueBox({
@@ -1609,47 +2650,47 @@ server <- function(input, output, session) {
         ylabtxt = "Lukumäärä"
 
         if (proportional) {
-          propylabtxt = "Osuus yrityskannasta"
+          ylabtxt = "Osuus yrityskannasta"
         }
 
 
       if (entry==TRUE & double == FALSE & yearly == FALSE & net == FALSE) {
 
-        plot <- generaGgroupedBarPlot(data, "neljännes", "aloittaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
+        plot <- generalGgroupedBarPlot(data, "vuosi", "aloittaneet", "neljännes", ylabtxt, "Vuosi", title, TRUE)
 
       } else if (entry==FALSE & double == FALSE & yearly == FALSE & net == FALSE) {
 
-        plot <- generaGgroupedBarPlot(data, "neljännes", "lopettaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
+        plot <- generalGgroupedBarPlot(data, "vuosi", "lopettaneet", "neljännes", ylabtxt, "Vuosi", title, TRUE)
 
       } else if (double == TRUE & yearly == FALSE & net == FALSE) {
 
-        plot <- generaGgroupedBarPlot(data, "neljännes", "aloittaneet_lopettaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
+        plot <- generalGgroupedBarPlot(data, "vuosi", "aloittaneet_lopettaneet", "neljännes", ylabtxt, "Vuosi", title, TRUE)
 
       } else if (entry==TRUE & double == FALSE & yearly == TRUE & net == FALSE) {
 
-        plot <- generaGgroupedBarPlot(ydata, "vuosi", "aloittaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
+        plot <- generalGgroupedBarPlot(ydata, "vuosi", "aloittaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
 
       } else if (entry==FALSE & double == FALSE & yearly == TRUE & net == FALSE) {
 
-        plot <- generaGgroupedBarPlot(ydata, "vuosi", "lopettaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
+        plot <- generalGgroupedBarPlot(ydata, "vuosi", "lopettaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
 
       } else if (double == TRUE & yearly == TRUE & net == FALSE) {
 
-        plot <- generaGgroupedBarPlot(ydata, "vuosi", "aloittaneet_lopettaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
+        plot <- generalGgroupedBarPlot(ydata, "vuosi", "aloittaneet_lopettaneet", "vuosi", ylabtxt, "Vuosi", title, TRUE)
 
       } else if (yearly == FALSE & net == TRUE) {
 
-		    plot <- generaGgroupedBarPlot(data, "neljännes", "nettomuutos", "vuosi", ylabtxt, "Vuosineljännes", title, TRUE)
+		    plot <- generalGgroupedBarPlot(data, "vuosi", "nettomuutos", "neljännes", "Nettomuutos, lukumäärä", "Vuosi", title, TRUE)
 
       } else if (yearly == TRUE & net == TRUE) {
 
-		    plot <- generaGgroupedBarPlot(ydata, "vuosi", "nettomuutos", "vuosi", ylabtxt, "Vuosi", title, TRUE)
+		    plot <- generalGgroupedBarPlot(ydata, "vuosi", "nettomuutos", "Vuosi", "Nettomuutos, osuus yrityskannasta", "Vuosi", title, TRUE)
 
       }
 
     }
 
-	generaGgroupedBarPlot <- function(data, xax, yax, fill,  ylabtxt, xlabtxt, title, dodge) {
+	generalGgroupedBarPlot <- function(data, xax, yax, fill,  ylabtxt, xlabtxt, title, dodge) {
 
 	  # Tekee palkkikuvaajan, jossa eri vuosien data on ryhmitelty vuosineljänneksittäin, kuukausittain tai vuosittain.
 	  # argumentti 'data' on data.frame, jossa sarakkeina numeerista dataa, vuosi, ja mahdollisesti vuosineljännes/kuukausi
@@ -1657,9 +2698,7 @@ server <- function(input, output, session) {
 	  # yax on numeerinen muuttuja, jota kuvataan
 	  # fill on vuosimuuttujan nimi; joustavuuden takia en ole kovakoodannut tätä.
 	  # xax, yax ja fill merkkijonoina
-
-	  print(data)
-
+	  
 	plot <- ggplot(data, aes_string(x= xax, y= yax, fill = fill)) + ylab(ylabtxt) + xlab(xlabtxt) +
         scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors, DHcolors)) +
         geom_hline(yintercept=0, color="red") +
@@ -1726,17 +2765,17 @@ server <- function(input, output, session) {
       return(gg)
     }
 
-    timeseries <- function(data, texts, argument, baseyear, colours, var, val) {
+    timeseries <- function(data, texts, argument, baseyear, colours, var, val, aikamääre) {
 
       #Tekee aikasarjan
 
-      colnames(data)[1] <- "Päivämäärä"
+      colnames(data)[1] <- aikamääre
 
       data <- data %>%
         select(everything()) %>%
-        gather(key = "Muuttuja", value = "arvo", -Päivämäärä)
-      timeseries <- ggplot(data, aes(x=Päivämäärä, y=arvo)) + geom_line(aes(color=Muuttuja))# + scale_color_manual(colours)
-
+        gather(key = "Muuttuja", value = "arvo", -aikamääre)
+      
+      timeseries <- ggplot(data, aes_string(x=aikamääre, y="arvo")) + geom_line(aes(color=Muuttuja))# + scale_color_manual(colours)
 
       if (argument) {
 
@@ -1750,7 +2789,7 @@ server <- function(input, output, session) {
 
     }
 
-    industryturnover <- function(data) {
+    industryturnover <- function(data, maakunta) {
 
       turnoverindustrygroup <- data
 
@@ -1759,7 +2798,8 @@ server <- function(input, output, session) {
 
       bar <- ggplot(turnoverindustrygroup, aes(x=Vaihtuvuus, y=Kirjaintaso, fill = Toimiala))+ geom_bar(position = "dodge", stat="identity")
       bar <- bar + scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors))
-      bar <- bar + ggtitle("Toimialakohtainen vaihtuvuus maakuntatasolla")
+      bar <- bar + labs(title = paste0("Toimialakohtainen vaihtuvuus maakuntatasolla, valinta: ", maakunta))#, subtitle = as.character(paste0("Maakunta: ", maakunta)))
+      #bar <- bar + expression(atop("Toimialakohtainen vaihtuvuus maakuntatasolla", atop(paste0("Maakunta: ", maakunta), "")))
       bar <- bar + theme(legend.title = element_text(size=10),
                          legend.text = element_text(size=8),
                          legend.key.size = unit(0.5, 'cm'),
@@ -1775,98 +2815,200 @@ server <- function(input, output, session) {
 
       # Tekee kuvaajat Konkurssit-sivulle
 
-      print(BRCfin)
-
-      BRCfin <- BRCfin %>% dplyr::rename("konkursseja" = "nobs")
+      #BRCfin <- BRCfin %>% dplyr::rename("konkursseja" = "nobs")
+      
+      yvar <- "lukumäärä"
 
       if (bars == FALSE & var == "TOL") {
-
-        decomp <- data.frame(time=unique(data124()$time))
-
-        BRCfinmod <- month_wrangler(BRCfin)
-
-        for (i in 1:length(input$regions12)) {
-
-          decomp <- cbind(decomp, BRCfinmod$konkursseja[BRCfinmod$maakunta == input$regions12[i] & BRCfinmod$TOL == "Yhteensä" & BRCfinmod$time > input$dates12[1] & BRCfinmod$time < input$dates12[2]])
-
+        
+        BRCfinmod <- data126()
+        
+        if (is.element("Liukuva keskiarvo", input$graphchoice12)) {
+          
+          BRCfinmod[,-c(1)] <- sapply(BRCfinmod[,-c(1)], function(x) manual_rollmean(x, 12))
+          
         }
+        
+        if (is.element("Indeksöity", input$graphchoice12)) {
+          
+          BRCfinmod[,-c(1)] <- sapply(BRCfinmod[,-c(1)], function(x) indeksöi(x))
+          
+          yvar <- "indeksi"
+          
+        }
+        
+      #print("Decomp from bankruptcygraphs:")
+      #print(BRCfinmod)
+        
+        if (!is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+            
+            names <- c("time", paste0(rep(c("yrityksiä/"), times = length(input$regions12)), 
+                                      rep(input$regions12)))
+            
+        } else if (is.element("työntekijöitä", input$muuttuja121) & !is.element("yrityksiä", input$muuttuja121)) {
+            
+            names <- c("time", paste0(rep(c("työntekijöitä/"), times = length(input$regions12)), 
+                                      rep(input$regions12)))
+            
+        } else if (is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+          
+            names <- c("time", paste0(rep(c("yrityksiä/", "työntekijöitä/"), times = length(input$regions12)), 
+                                      rep(input$regions12, each =2)))
+          
+        }
+        
+        colnames(BRCfinmod) <- names
+        
 
-        colnames(decomp) <- c("time", input$regions12)
-
-        d <- timeseries(decomp, texts, FALSE, as.character(sys.date()), c(DHcolors, DHcolors, DHcolors), "muuttuja", "lukumäärä")
-
-        return(d)
+        plot <- timeseries(BRCfinmod, texts, FALSE, as.character(sys.date()), c(DHcolors, DHcolors, DHcolors), 
+                           "muuttuja", "lukumäärä", "Päivämäärä")
+        
+        plot %<>% ggplotly()
+        
+        plot <- plot %>% layout(font = font1,
+                                yaxis = list(title = yvar),
+                                xaxis = list(title = "Aika"))
+        
+        return(plot)
 
       } else if (bars==TRUE & var == "TOL") {
 
         data <- data123()
 
-        data <- data %>% dplyr::rename("konkursseja" = "nobs")
+        #data <- aggregate("yrityksiä"~"date"+"TOL", data= data, FUN="sum")
+        
+        data <- aggregate(formula(paste0(input$muuttuja12, "~date+TOL")), data = data, FUN = "sum")
 
-        data <- aggregate(konkursseja~time+TOL, data= data, FUN="sum")
+        plot <- generalGgroupedBarPlot(data, "date", input$muuttuja12, "TOL", "ylabtxt", "vuosi", texts[1], FALSE)
 
-        plot <- generaGgroupedBarPlot(data, "time", "konkursseja", "TOL", "ylabtxt", "vuosi", texts[1], FALSE)
-
-        ggplotly()
+        plot %<>% ggplotly()
+        
+        plot <- plot %>% layout(font = font1,
+                                yaxis = list(title = yvar),
+                                xaxis = list(title = "Aika"))
 
         return(plot)
 
       } else if (bars==FALSE & var == "maakunta") {
 
-        decomp <- data.frame(time=unique(data125()$time))
+        #decomp <- data.frame(time=unique(data125()$date))
 
-        BRCfinmod <- month_wrangler(BRCfin)
-
-        for (i in 1:length(input$industries12)) {
-
-          decomp <- cbind(decomp, BRCfinmod$konkursseja[BRCfinmod$TOL == input$industries12[i] & BRCfinmod$maakunta == "KOKO MAA" & BRCfinmod$time > input$dates12[1] & BRCfinmod$time < input$dates12[2]])
-
+        BRCfinmod <- data127()
+        
+        if (is.element("Liukuva keskiarvo", input$graphchoice12)) {
+          
+          BRCfinmod[,-c(1)] <- sapply(BRCfinmod[,-c(1)], function(x) manual_rollmean(x, 12))
+          
         }
+        
+        if (is.element("Indeksöity", input$graphchoice12)) {
+          
+          BRCfinmod[,-c(1)] <- sapply(BRCfinmod[,-c(1)], function(x) indeksöi(x))
+          
+          yvar <- "indeksi"
+          
+        }
+        
+        #print("Decomp from bankruptcygraphs:")
+        #print(BRCfinmod)
 
-        colnames(decomp) <- c("time", input$industries12)
+        if (!is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+          
+          names <- c("time", paste0(rep(c("yrityksiä/"), times = length(input$industries12)), 
+                                    input$industries12))
+          
+        } else if (is.element("työntekijöitä", input$muuttuja121) & !is.element("yrityksiä", input$muuttuja121)) {
+          
+          names <- c("time", paste0(rep(c("työntekijöitä/"), times = length(input$industries12)), 
+                                    input$industries12))
+          
+        } else if (is.element("työntekijöitä", input$muuttuja121) & is.element("yrityksiä", input$muuttuja121)) {
+          
+          names <- c("time", paste0(rep(c("yrityksiä/", "työntekijöitä/"), times = length(input$industries12)), 
+                                    rep(input$industries12, each =2)))
+          
+        }
+        
+        colnames(BRCfinmod) <- names
 
-        d <- timeseries(decomp, texts, FALSE, as.character(sys.date()), c(DHcolors, DHcolors, DHcolors), "muuttuja", "lukumäärä")
+        plot <- timeseries(BRCfinmod, texts, FALSE, as.character(sys.date()), c(DHcolors, DHcolors, DHcolors), 
+                           "muuttuja", "lukumäärä", "Päivämäärä")
 
+        plot %<>% ggplotly()
+        
+        plot <- plot %>% layout(font = font1,
+                                yaxis = list(title = yvar),
+                                xaxis = list(title = "Aika"))
+        
       } else if (bars==TRUE & var == "maakunta") {
 
         data <- data122()
+        
+        #data <- aggregate("yrityksiä"~"date"+"maakunta", data = data, FUN="sum")
+        
+        data <- aggregate(formula(paste0(input$muuttuja12, "~date+maakunta")), data = data, FUN = "sum")
 
-        data <- data %>% dplyr::rename("konkursseja" = "nobs")
-
-        data <- aggregate(konkursseja~time+maakunta, data= data, FUN="sum")
-
-        plot <- generaGgroupedBarPlot(data, "time", "konkursseja", "maakunta", "ylabtxt", "vuosi", texts[1], FALSE)
-
-        plot <- ggplotly(plot)
+        plot <- generalGgroupedBarPlot(data, "date", input$muuttuja12, "maakunta", "ylabtxt", "vuosi", texts[1], FALSE)
+        
+        plot %<>% ggplotly()
+        
+        plot <- plot %>% layout(font = font1,
+                                yaxis = list(title = yvar),
+                                xaxis = list(title = "Aika"))
 
       }
 
     }
 
-    scatterplot <- function(data, texts, trend, vars, includeTrendline, includeStandardError) {
+    scatterplot <- function(data, texts, vars, includeTrendline, weighted) {
 
       # Tekee scatterplotin
+      
+      plot <- ggplot(data, aes_string(x=vars[1], y=vars[2])) 
 
       if (includeTrendline) {
-
-        plot <- ggplot(data, aes_string(x=vars[1], y=vars[2])) + geom_point(size=2, shape=23)
-        plot <- plot + geom_smooth(method=lm,se=includeStandardError)
-        return(plot)
-
-      } else {
-
-        plot <- ggplot(data, aes_string(x=vars[1], y=vars[2])) + geom_point(size=2, shape=23)
-        return(plot)
+        
+        plot <- plot + geom_smooth(mapping = aes_string(x=vars[1], y=vars[2]), method="lm", 
+                                   se=FALSE)
 
       }
+      
+      if (weighted) {
+      
+        plot <- plot + geom_smooth(mapping = aes_string(x=vars[1], y=vars[2], weight = vars[4]), method="lm", 
+                                   se=FALSE) 
+      
+      }
+      
+      plot <- plot + geom_point(aes_string(fill=vars[3], size=vars[4]))
+      plot <- plot + scale_x_continuous(name = texts[1])
+      
+      return(plot)
 
     }
+    
+    decompBars <- function(data, title) {
+      
+      dfm <- reshape2::melt(data[,colnames(data)],id.vars = 1)
+      
+      plot <- ggplot(dfm, aes_string(x = colnames(data)[1], y = "value")) + geom_bar(aes(fill = variable), stat="identity", position = "stack") + ylab("ylabtxt") + xlab("Vuosi")
+      plot <- plot + scale_fill_manual(values=c(DHcolors, DHcolors, DHcolors))
+      plot <- plot + geom_hline(yintercept=0, color="red")
+      plot <- plot + ggtitle("Konkurssien lukumäärä, konkursseissa työnsä menettäneiden lukumäärä")
+      plot <- plot + scale_y_continuous(labels = tuhaterotin)
+      
+     
+      return(plot) 
+    }
+    
+
 
 }
-
 
 ##### RUN THE APP #####
 
 shinyApp(ui = ui, server = server)
 
-}
+
+
+

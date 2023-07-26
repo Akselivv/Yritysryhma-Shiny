@@ -10,23 +10,6 @@
 #if(length(packages_to_install)) install.packages(packages_to_install)
 #lapply(list_of_packages, require, character.only = TRUE)
 
-library(shiny)
-library(plotly)
-library(shinyjs)
-library(ECharts2Shiny)
-library(tidyverse)
-library(highcharter)
-library(shinydashboard)
-library(markdown)
-library(shinyWidgets)
-library(shinyscreenshot)
-library(ggplot2)
-library(magrittr)
-library(tidyr)
-library(tidyselect)
-library(plyr)
-
-
 fetchyears <- function(x1, x2, x3, x4) {
   dates <- BRCfin$time[BRCfin$time > x1 & BRCfin$time < x2 & is.element(BRCfin$TOL, x3) & is.element(BRCfin$maakunta, x4)]
   #dates <- as.POSIXct(dates, format = "%m/%d/%Y")
@@ -180,4 +163,65 @@ show_colors <- function(alpha = 1) {
     ggplot()  +
     geom_treemap(aes(area = 1, fill = colors), alpha = alpha) +
     scale_fill_manual(values = colors)
+}
+
+dateRangeInput01 <- function(id, start) {
+  
+  dateRangeInput(id, "Valitse aikaväli:", start = start, end = as.character(Sys.Date()))
+  
+}
+
+vBox <- function(txt, width) {
+  
+  valueBox("", txt, width=width)
+  
+}
+
+link <- function(url, txt, width) {
+  
+  tags$a(
+    
+    href = url,
+    target = "_blank",
+    vBox(txt, width))
+  
+}
+
+manual_rollmean <- function(data, length) {
+  
+  appendvec <- rep(data[1], length)
+  temp <- c(appendvec, data)
+  
+  for (i in length:length(temp)) {
+    
+    temp[i] <- mean(temp[(i-length):i])
+    
+  }
+  temp <- temp[c((length+1):length(temp))]
+  return(temp)
+  
+}
+
+indeksöi <- function(data) {
+  
+  data/data[1]*100
+  
+}
+
+mode_custom <- function(x, na.rm = FALSE) {
+  if(na.rm){ 
+    x = x[!is.na(x)]
+  }
+  
+  valx <- unique(x)
+  return(valx[which.max(tabulate(match(x, valx)))])
+}
+
+
+pad_breaks <- function(vector) {
+  
+  
+  
+  return(seq(0, max(vector), by = mode_custom(diff(c(0, vector)))))
+  
 }

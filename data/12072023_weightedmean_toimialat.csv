@@ -1,0 +1,163 @@
+toimiala,vuosi,"weighted.mean(tuottavuus, nobs)",nobs
+"Ammatillinen, tieteellinen ja tekninen toiminta",2013,2.6148008333891424,49832
+"Ammatillinen, tieteellinen ja tekninen toiminta",2014,2.6191514834568386,50773
+"Ammatillinen, tieteellinen ja tekninen toiminta",2015,2.4682054399024214,51188
+"Ammatillinen, tieteellinen ja tekninen toiminta",2016,2.6671526534507124,52376
+"Ammatillinen, tieteellinen ja tekninen toiminta",2017,2.7431543291086355,53806
+"Ammatillinen, tieteellinen ja tekninen toiminta",2018,2.6717361755462576,54962
+"Ammatillinen, tieteellinen ja tekninen toiminta",2019,2.7435335570058066,57894
+"Ammatillinen, tieteellinen ja tekninen toiminta",2020,2.4654133283665587,61369
+"Ammatillinen, tieteellinen ja tekninen toiminta",2021,2.9323552249485014,64469
+Hallinto- ja tukipalvelutoiminta,2013,2.199233440559302,18416
+Hallinto- ja tukipalvelutoiminta,2014,2.0156733918528102,18607
+Hallinto- ja tukipalvelutoiminta,2015,2.1381303149469426,18553
+Hallinto- ja tukipalvelutoiminta,2016,2.1578227603423312,18879
+Hallinto- ja tukipalvelutoiminta,2017,2.2343695899817932,19266
+Hallinto- ja tukipalvelutoiminta,2018,2.22849041710799,19669
+Hallinto- ja tukipalvelutoiminta,2019,2.2166462853114233,20830
+Hallinto- ja tukipalvelutoiminta,2020,1.9982092368126436,22253
+Hallinto- ja tukipalvelutoiminta,2021,2.2768000467849077,23452
+Informaatio ja viestintä,2013,1.8402975268763053,14244
+Informaatio ja viestintä,2014,1.9868766453714641,14755
+Informaatio ja viestintä,2015,1.9458564247809453,15089
+Informaatio ja viestintä,2016,1.919560285782535,15567
+Informaatio ja viestintä,2017,2.0502302872564346,16353
+Informaatio ja viestintä,2018,2.022977173075173,16936
+Informaatio ja viestintä,2019,2.014555479711968,18029
+Informaatio ja viestintä,2020,1.8195163713457652,19216
+Informaatio ja viestintä,2021,2.1980016342324955,20255
+Kaivostoiminta ja louhinta,2013,1.3668805350588622,1104
+Kaivostoiminta ja louhinta,2014,1.2790929449203743,1118
+Kaivostoiminta ja louhinta,2015,1.1550955262536255,1102
+Kaivostoiminta ja louhinta,2016,1.1978793768644216,1103
+Kaivostoiminta ja louhinta,2017,1.347624537359979,1114
+Kaivostoiminta ja louhinta,2018,1.4509180729220217,1102
+Kaivostoiminta ja louhinta,2019,1.353730482485646,1111
+Kaivostoiminta ja louhinta,2020,1.2575362295437738,1111
+Kaivostoiminta ja louhinta,2021,1.304562583494047,1140
+Kiinteistöalan toiminta,2013,1.992254034271835,26072
+Kiinteistöalan toiminta,2014,2.0909305310609714,26353
+Kiinteistöalan toiminta,2015,2.1102487738006803,26639
+Kiinteistöalan toiminta,2016,2.164714666003934,27237
+Kiinteistöalan toiminta,2017,2.0632914942317844,27670
+Kiinteistöalan toiminta,2018,1.9490304413857198,28044
+Kiinteistöalan toiminta,2019,1.960385693326734,28791
+Kiinteistöalan toiminta,2020,1.7922428506557513,29620
+Kiinteistöalan toiminta,2021,1.5508775897593232,30479
+Koulutus,2013,2.6616942345817076,5195
+Koulutus,2014,2.7048958548229223,5479
+Koulutus,2015,2.5243842159782703,5776
+Koulutus,2016,3.0430336418971073,6050
+Koulutus,2017,3.1023386619587403,6356
+Koulutus,2018,3.194149460627254,6738
+Koulutus,2019,3.3586827292509627,7397
+Koulutus,2020,3.0558548894265978,8237
+Koulutus,2021,3.7325011026447146,8800
+Kuljetus ja varastointi,2013,1.5988499359701505,23584
+Kuljetus ja varastointi,2014,1.8616704174645982,23257
+Kuljetus ja varastointi,2015,1.8274480794938248,22812
+Kuljetus ja varastointi,2016,1.903457271794941,22612
+Kuljetus ja varastointi,2017,1.982589252565577,22346
+Kuljetus ja varastointi,2018,1.947231134614128,22113
+Kuljetus ja varastointi,2019,1.9778279015873892,23070
+Kuljetus ja varastointi,2020,1.8422363232522034,24360
+Kuljetus ja varastointi,2021,2.0138884488450732,24754
+"Maatalous, metsätalous ja kalatalous",2013,2.0756594507527777,20913
+"Maatalous, metsätalous ja kalatalous",2014,2.176438309692769,21186
+"Maatalous, metsätalous ja kalatalous",2015,1.8798062910646909,21379
+"Maatalous, metsätalous ja kalatalous",2016,2.3897873179580253,21617
+"Maatalous, metsätalous ja kalatalous",2017,2.5905240021808558,21955
+"Maatalous, metsätalous ja kalatalous",2018,2.175396891207054,22110
+"Maatalous, metsätalous ja kalatalous",2019,2.194763876481386,22662
+"Maatalous, metsätalous ja kalatalous",2020,1.8760649657418866,23394
+"Maatalous, metsätalous ja kalatalous",2021,1.3284231764232646,24007
+Majoitus- ja ravitsemistoiminta,2013,1.9175256488482204,13126
+Majoitus- ja ravitsemistoiminta,2014,2.1626296889534458,13225
+Majoitus- ja ravitsemistoiminta,2015,2.1567884763872907,13390
+Majoitus- ja ravitsemistoiminta,2016,2.24363443999536,13753
+Majoitus- ja ravitsemistoiminta,2017,2.332094693763826,14147
+Majoitus- ja ravitsemistoiminta,2018,2.2651728224709218,14479
+Majoitus- ja ravitsemistoiminta,2019,2.4038366392379187,15104
+Majoitus- ja ravitsemistoiminta,2020,2.1686268070072097,15833
+Majoitus- ja ravitsemistoiminta,2021,2.5664922453433885,16280
+Muu palvelutoiminta,2013,5.228921768403183,22674
+Muu palvelutoiminta,2014,5.715636166384477,22963
+Muu palvelutoiminta,2015,5.327751345652016,23357
+Muu palvelutoiminta,2016,5.728595919619746,23746
+Muu palvelutoiminta,2017,5.752485903880296,24400
+Muu palvelutoiminta,2018,5.902137294433121,25275
+Muu palvelutoiminta,2019,6.105361404768746,26867
+Muu palvelutoiminta,2020,5.625176308498315,28494
+Muu palvelutoiminta,2021,6.585602258814851,29414
+Rahoitus- ja vakuutustoiminta,2013,0.9358262188243199,3906
+Rahoitus- ja vakuutustoiminta,2014,1.2750797661566884,3972
+Rahoitus- ja vakuutustoiminta,2015,1.2046336280759433,4046
+Rahoitus- ja vakuutustoiminta,2016,1.2006567068187857,4116
+Rahoitus- ja vakuutustoiminta,2017,1.328551992475446,4279
+Rahoitus- ja vakuutustoiminta,2018,1.1988954944558028,4384
+Rahoitus- ja vakuutustoiminta,2019,1.1296001450151614,4536
+Rahoitus- ja vakuutustoiminta,2020,1.1860093749884801,4712
+Rahoitus- ja vakuutustoiminta,2021,1.1332834631852584,5001
+Rakentaminen,2013,2.709997902876685,50332
+Rakentaminen,2014,2.8018043278138065,50264
+Rakentaminen,2015,2.7282508605583233,49765
+Rakentaminen,2016,2.837938466979411,50093
+Rakentaminen,2017,2.8690213803301345,50679
+Rakentaminen,2018,2.8017585834532244,51046
+Rakentaminen,2019,2.8796658560080375,52915
+Rakentaminen,2020,2.6560052064658564,55306
+Rakentaminen,2021,3.0369214012581804,57202
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2013,1.1860208323488244,880
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2014,0.8632065184390622,942
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2015,1.4734884131891712,1002
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2016,1.2451364051936802,1048
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2017,1.1350580625639053,1061
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2018,1.0649791966493334,1056
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2019,1.040075272418264,1070
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2020,0.6894331750385468,1128
+"Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",2021,0.5639123290787054,1188
+"Taiteet, viihde ja virkistys",2013,3.245751525877125,8652
+"Taiteet, viihde ja virkistys",2014,3.1643260422883914,9151
+"Taiteet, viihde ja virkistys",2015,3.2306898772110135,9686
+"Taiteet, viihde ja virkistys",2016,3.5302644314555303,10251
+"Taiteet, viihde ja virkistys",2017,3.523865979804003,10828
+"Taiteet, viihde ja virkistys",2018,3.5267705331721,11552
+"Taiteet, viihde ja virkistys",2019,3.666082071905946,12998
+"Taiteet, viihde ja virkistys",2020,3.211786795554802,14477
+"Taiteet, viihde ja virkistys",2021,3.932334230264802,15464
+Teollisuus,2013,1.829949514218778,26625
+Teollisuus,2014,1.839100577650673,26413
+Teollisuus,2015,1.8172025154146665,26171
+Teollisuus,2016,1.851882508712678,26270
+Teollisuus,2017,1.9225232948357456,26363
+Teollisuus,2018,1.9208955544739599,26463
+Teollisuus,2019,1.9662406725504182,27238
+Teollisuus,2020,1.783566155058973,27978
+Teollisuus,2021,1.7345456628436764,28752
+Terveys- ja sosiaalipalvelut,2013,2.507010242805143,10037
+Terveys- ja sosiaalipalvelut,2014,2.611049668138443,10402
+Terveys- ja sosiaalipalvelut,2015,2.5681190394466746,10829
+Terveys- ja sosiaalipalvelut,2016,2.611643093344137,11171
+Terveys- ja sosiaalipalvelut,2017,2.666709225724487,11442
+Terveys- ja sosiaalipalvelut,2018,2.780196944633214,11556
+Terveys- ja sosiaalipalvelut,2019,2.6810320678638484,12308
+Terveys- ja sosiaalipalvelut,2020,2.459966141390732,13343
+Terveys- ja sosiaalipalvelut,2021,2.964940307600008,13983
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2013,1.2344205205144343,57703
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2014,1.3095382464740097,57640
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2015,1.3063644801401897,56829
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2016,1.4477240925423809,56876
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2017,1.4881123607872917,56933
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2018,1.4999990611565943,56360
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2019,1.5200892597310371,57010
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2020,1.4328747708664251,57930
+Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus,2021,1.4906728384154249,58999
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2013,0.5428866138779398,1819
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2014,0.21297702082749304,1837
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2015,0.45419071154366447,1836
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2016,0.42508064930652945,1853
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2017,0.4289460907637223,1880
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2018,1.272160385886932,1898
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2019,1.3155138315425798,1927
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2020,1.2740331047957956,1974
+"Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",2021,0.8415347187044581,1999

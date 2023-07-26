@@ -1,20 +1,8 @@
-library(shiny)
-library(plotly)
-library(shinyjs)
-library(ECharts2Shiny)
-library(tidyverse)
-library(highcharter)
-library(shinydashboard)
-library(markdown)
-library(shinyWidgets)
-library(shinyscreenshot)
-library(ggplot2)
-library(magrittr)
-library(tidyr)
-library(tidyselect)
-library(plyr)
+
 
 ##### SET OPTIONS #####
+
+options(shiny.reactlog = TRUE)
 
 options(highcharter.theme = hc_theme_smpl(tooltip = list(valueDecimals = 2)))
 
@@ -26,7 +14,7 @@ scrapeindicator <- FALSE
 saveindicator <- FALSE
 readindicator <- TRUE
 
-if (scrapeindicator == TRUE) {
+if (scrapeindicator) {
 
   pg1 <- rvest::read_html("https://www.prh.fi/fi/kaupparekisteri/yritystenlkm/lkm.html")
 
@@ -38,13 +26,13 @@ if (scrapeindicator == TRUE) {
 
 }
 
-if (saveindicator == TRUE) {
+if (saveindicator) {
 
   writexl::write_xlsx(scrapedtable,"data/scrapedtable.xlsx")
 
 }
 
-if (readindicator == TRUE) {
+if (readindicator) {
 
   suppressMessages(
     scrapedtable <- readxl::read_excel("data/scrapedtable.xlsx")
@@ -56,11 +44,114 @@ if (readindicator == TRUE) {
 
 scrapedtable[length(scrapedtable$Yritysmuoto),2]
 
-#### WRANGLE DATA ON FIRM SIZE DISTRIBUTION #####
+##### CHECK IF SOME DATA SHOULD BE UPDATED #####
+
+##### KONKURSSISARJAT ETUSIVULLE #####
+
+suppressMessages(
+  konkurssisarja <- read.csv("data/konkurssisarja.csv")
+)
+
+colnames(konkurssisarja)[2] <- c("date")
+
+konkurssisarja <- na.omit(konkurssisarja)
+
+konkurssisarja$date <- lubridate::ym(gsub("M", "-", konkurssisarja$date))
+
+system_date <- format(Sys.Date(), "%Y-%m-%d")
+
+if (system_date > max(konkurssisarja$date)) {
+  
+  updateKonkurssisarja <- FALSE
+  
+} else {
+  
+  updateKonkurssisarja <- FALSE
+  
+}
+
+if (updateKonkurssisarja) {
+  
+  GET <- httr::GET("https://pxdata.stat.fi:443/PxWeb/sq/6c5ce71e-a0a5-48bc-8dd8-00e9c28b32b2")
+  
+  temp <- tempfile(fileext = '.xlsx')
+  
+  writeBin(GET$content, temp)
+  
+  konkurssisarja <- readxl::read_excel(temp)
+  
+  write.csv(konkurssisarja, "data/konkurssisarja.csv")
+  
+}
+
+##### KONKURSSISARJAT "KONKURSSIT"-VÄLILEHDELLE #####
+  
+suppressMessages(
+  
+  BRCfin <- read.csv("data/konkurssit.csv")
+  
+) 
+
+BRCfin <- BRCfin[-c(1,2),]
+BRCfin <- BRCfin[,-c(1)]
+
+colnames(BRCfin) <- c("date", "TOL", "maakunta", "yrityksiä", "työntekijöitä")
+
+BRCfin$date %<>% zoo::na.locf()
+BRCfin$TOL %<>% zoo::na.locf()
+
+BRCfin %<>% na.omit()
+
+BRCfin$date <- gsub("M", "-", BRCfin$date) %>% ym
+  
+system_date <- format(Sys.Date(), "%Y-%m-%d")
+
+if (system_date > max(BRCfin$date)) {
+  
+  updateKonkurssit <- FALSE ################################################################ TEE JOTAIN TÄLLE
+  
+} else {
+  
+  updateKonkurssit <- FALSE
+  
+}
+
+if (updateKonkurssit) {
+  
+  GET <- httr::GET("https://pxdata.stat.fi:443/PxWeb/sq/8ee1db5c-fa7e-473d-b7a0-450e66700873")
+  
+  temp <- tempfile(fileext = '.xlsx')
+  
+  writeBin(GET$content, temp)
+  
+  BRCfin <- readxl::read_excel(temp)
+  
+  colnames(BRCfin) <- c("date", "TOL", "maakunta", "yrityksiä", "työntekijöitä")
+  
+  BRCfin$työntekijöitä %<>% as.numeric()
+  
+  write.csv(BRCfin, "data/konkurssit.csv")
+  
+  colnames(BRCfin) <- c("date", "TOL", "maakunta", "yrityksiä", "työntekijöitä") 
+  
+  BRCfin <- BRCfin[-c(1,2),]
+  #BRCfin$työntekijöitä %<>% as.numeric()
+  
+  BRCfin$date %<>% zoo::na.locf()
+  BRCfin$TOL %<>% zoo::na.locf()
+  
+  BRCfin %<>% na.omit()
+  
+  BRCfin$date <- gsub("M", "-", BRCfin$date) %>% ym
+  
+}
+
+ 
+##### WRANGLE DATA ON FIRM SIZE DISTRIBUTION #####
 
 suppressMessages(
 
-  sizedata <- readxl::read_excel('data/001_13w1_2021_20230522-151740.xlsx')
+  sizedata <- readxl::read_excel('data/yrityksetKokoluokittain.xlsx')
 
 )
 
@@ -233,83 +324,26 @@ finalfinalfinaldf <- data.frame(vuosi=finalfinalfinaldf$vuosi, vuosineljännes =
 
 ##### READ DATA #####
 
-#suppressMessages(
-
-#  konkurssisarja <- readxl::read_excel("data/konkurssit.xlsx")
-
-#)
-
-#konkurssisarja <- konkurssisarja[-c(1:2),]
-#konkurssisarja <- konkurssisarja[-c(340:382),]
-
-#colnames(konkurssisarja) <- c("time", "nobs")
-
-#konkurssisarja <- as.data.frame(konkurssisarja)
-
-#konkurssisarja$time <- gsub('M', '', konkurssisarja$time)
-
-#konkurssisarja$time <- as.POSIXct(paste0(as.character(konkurssisarja$time), '01'), format='%Y%m%d')
-
-#for (i in 2:length(konkurssisarja[1,])) {
-#  konkurssisarja[,i] <- as.numeric(unlist(konkurssisarja[,i]))
-#}
-
-#suppressMessages(
-
-#  palkkasummaindeksi <- readxl::read_excel("data/palkkasummaindeksi.xlsx")
-
-#)
-
-#palkkasummaindeksi <- palkkasummaindeksi[-c(1:3),]
-#palkkasummaindeksi <- palkkasummaindeksi[-c(449:480),]
-
-#colnames(palkkasummaindeksi)[1] <- "time"
-
-#palkkasummaindeksi <- as.data.frame(palkkasummaindeksi)
-
-#palkkasummaindeksi$time <- gsub('M', '', palkkasummaindeksi$time)
-
-#palkkasummaindeksi$time <- as.POSIXct(paste0(as.character(palkkasummaindeksi$time), '01'), format='%Y%m%d')
-
-#for (i in 2:length(palkkasummaindeksi[1,])) {
-#  palkkasummaindeksi[,i] <- as.numeric(unlist(palkkasummaindeksi[,i]))
-#}
-
 suppressMessages(
 
-  investmentchangedata <- readxl::read_excel("data/001_12r6_2022q4_20230511-092217.xlsx")
+  entryexitdata <- readxl::read_excel("data/aloittaneetLopettaneet.xlsx")
 
 )
 
 suppressMessages(
 
-  entryexitdata <- readxl::read_excel("data/001_11yq_2022q4_20230511-122745.xlsx")
+  konkurssisarja <- read.csv("data/konkurssisarja.csv")
 
 )
 
-suppressMessages(
+konkurssisarja %<>% na.omit()
 
-  handoutdata <- readxl::read_excel('data/001_12s5_2021q4_20230515-084538.xlsx')
+konkurssisarja <- konkurssisarja[,-c(1)]
 
-)
+colnames(konkurssisarja) <- c("date", "indeksi (konkursseja)", "indeksi (konkursseissa työnsä menettäneitä)")
 
-suppressMessages(
-
-  revenuedata <- readxl::read_excel("data/001_123y_2023m03_20230516-115325.xlsx")
-
-)
-
-suppressMessages(
-
-  konkurssisarja <- readxl::read_excel("data/konkurssit.xlsx")
-
-)
-
-colnames(konkurssisarja)[2] <- "konkursseja"
-
-konkursseja <- konkurssisarja[,2]
-
-konkurssisarja <- data_cropper(konkurssisarja, c(1:2), c(1:2), c(449:480))
+konkurssisarja[2] <- 100*manual_rollmean(as.numeric(unlist(konkurssisarja[2])), 12)/as.numeric(konkurssisarja[1,2])
+konkurssisarja[3] <- 100*manual_rollmean(as.numeric(unlist(konkurssisarja[3])), 12)/as.numeric(konkurssisarja[1,3])
 
 suppressMessages(
 
@@ -335,27 +369,11 @@ suppressMessages(
 
 kuluttajahintaindeksi <- data_cropper(kuluttajahintaindeksi, c(1,3), c(1:2), c(221:254))
 
-handoutdata <- as.data.frame(handoutdata)
-
 suppressMessages(
 
-  BRCfin <- readxl::read_excel("data/BRCsuomi.xlsx")
+  kunnattuottavuus <- vroom::vroom("data/kunnattuottavuus.csv", delim=",")
 
 )
-
-suppressMessages(
-
-  kunnatmaakunnat <- read.csv("data/kunnat_maakunnat_avain.csv")
-
-)
-
-suppressMessages(
-
-  kunnattuottavuus <- read.csv("data/kunnattuottavuus.csv")
-
-)
-
-BRC <- read.csv(file='data/BRC.csv')
 
 shapefile <- rgdal::readOGR(dsn="data/NUTS_EURO_data", layer="NUTS_RG_20M_2021_3035")
 
@@ -387,6 +405,8 @@ industrychoicevec <- c("Maa-, metsä ja kalatalous",
                        "Majoitus- ja ravitsemistoiminta",
                        "Muut palvelut",
                        "Tuntematon")
+
+industrychoicevec
 
 #regionchoicevec <- c("MK21 Ahvenanmaa" = "FI200",
 #                     "MK13 Keski-Suomi" = "FI193",
@@ -639,6 +659,44 @@ TOLcharvec33 <- c("Toimialat yhteensä",
                   "Toimiala tuntematon",
                   "Ei yritystunnusta")
 
+toimialavektori122 <- c("toimialat yhteensä",                                                                           
+                        "Toimiala tuntematon",                                                                             
+                        "Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta",                         
+                        "Rahoitus- ja vakuutustoiminta",                                                                   
+                        "Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",
+                        "Terveys- ja sosiaalipalvelut",                                                                    
+                        "Kaivostoiminta ja louhinta",                                                                      
+                        "Informaatio ja viestintä",                                                                     
+                        "Majoitus- ja ravitsemistoiminta",                                                                 
+                        "Muu palvelutoiminta",                                                                             
+                        "Koulutus",                                                                                        
+                        "Maatalous, metsätalous ja kalatalous",                                                         
+                        "Taiteet, viihde ja virkistys",                                                                    
+                        "Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus",              
+                        "Ammatillinen, tieteellinen ja tekninen toiminta",                                                 
+                        "Teollisuus",                                                                                      
+                        "Rakentaminen",                                                                                    
+                        "Kiinteistöalan toiminta",                                                                      
+                        "Hallinto- ja tukipalvelutoiminta",                                                                
+                        "Kuljetus ja varastointi")
+
+toimialat4 <- c("Yhteensä", 
+                "Tukku- ja vähittäiskauppa; moottoriajoneuvojen ja moottoripyörien korjaus",              
+                "Kiinteistöalan toiminta",                                                                      
+                "Teollisuus",                                                                                      
+                "Ammatillinen, tieteellinen ja tekninen toiminta",                                                 
+                "Rakentaminen",                                                                                    
+                "Vesihuolto, viemäri- ja jätevesihuolto, jätehuolto ja muu ympäristön puhtaanapito",
+                "Majoitus- ja ravitsemistoiminta",                                                                 
+                "Kuljetus ja varastointi",                                                                         
+                "Rahoitus- ja vakuutustoiminta",                                                                   
+                "Terveys- ja sosiaalipalvelut",                                                                    
+                "Kaivostoiminta ja louhinta",                                                                      
+                "Informaatio ja viestintä",                                                                     
+                "Hallinto- ja tukipalvelutoiminta",                                                                
+                "Muu palvelutoiminta",                                                                             
+                "Sähkö-, kaasu- ja lämpöhuolto, jäähdytysliiketoiminta")
+
 TOLchoicevec34 <- c("Kaikki","Koko teollisuus (B-E)" = "(B-E)", "Rakentaminen (F)" = "(F)", "Koko kauppa (G)" = "(G)", "Muut palvelut (HIJLMNRS)" = "(HIJLMNRS)")
 
 variablechoicevec34 <- c("Kaikki","Alkuperäinen indeksisarja", "Työpäiväkorjattu indeksisarja", "Kausitasoitettu indeksisarja", "Trendisarja")
@@ -709,9 +767,6 @@ coordinates <- data.frame(
   meanlong = longmids,
   id = mydata$id)
 
-NUTS3narm <- na.omit(coordinates$NUTS3)
-NUTS3narminds <- round(runif(n=length(BRC$AssetsBefore), min=1, max=length(NUTS3narm)), 0)
-
 ##### SORT BANKRUPTCY DATA #####
 
 x1 = 1:9
@@ -743,110 +798,17 @@ newdf <- data.frame(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)
 regionlatnameconversion <- data.frame(name=latnamevec, nutsname=regioncharvec)
 regionlatnameconversion <- join(regionlatnameconversion, mydata, by="nutsname")
 
-industry <- numeric(length(BRC$SICPrimary))
-industryabbr <- numeric(length(BRC$SICPrimary))
 
-BRC <- cbind(BRC, industry)
-BRC <- cbind(BRC, industryabbr)
-
-for (i in 1:length(BRC$SICPrimary)) {
-  if (is.element(floor(BRC$SICPrimary[i]/100), x1)) {
-    BRC$industry[i] <- "Agriculture, Forestry, And Fishing"
-    BRC$industryabbr[i] <- "AFF"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x2)) {
-    BRC$industry[i] <- "Mining"
-    BRC$industryabbr[i] <- "MIN"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x3)) {
-    BRC$industry[i] <- "Construction"
-    BRC$industryabbr[i] <- "CON"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x4)) {
-    BRC$industry[i] <- "Manufacturing"
-    BRC$industryabbr[i] <- "MAN"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x5)) {
-    BRC$industry[i] <- "Transportation, Communications, Electric, Gas, And Sanitary Services"
-    BRC$industryabbr[i] <- "TCE"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x6)) {
-    BRC$industry[i] <- "Wholesale Trade"
-    BRC$industryabbr[i] <- "WHO"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x7)) {
-    BRC$industry[i] <- "Retail Trade"
-    BRC$industryabbr[i] <- "RET"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x8)) {
-    BRC$industry[i] <- "Finance, Insurance, And Real Estate"
-    BRC$industryabbr[i] <- "FIN"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x9)) {
-    BRC$industry[i] <- "Services"
-    BRC$industryabbr[i] <- "SER"
-  } else if (is.element(floor(BRC$SICPrimary[i]/100), x10)) {
-    BRC$industry[i] <- "Public Administration"
-    BRC$industryabbr[i] <- "PUB"
-  }
-}
 
 ###### SORT BANKRUPTCY DATA #####
-
-BRCfin <- BRCfin[-(1:2),]
-BRCfin <- BRCfin[-(48313:48347),]
-
-colnames(BRCfin) <- c("date", "TOL", "maakunta", "nobs")
-
-BRCfin$date <- zoo::na.locf(BRCfin$date)
-
-BRCfin$TOL <- zoo::na.locf(BRCfin$TOL)
-
-BRCfin$nobs <- as.numeric(BRCfin$nobs)
 
 ##### SORT ENTRY & EXIT DATA #####
 
 ##### SORT SUBSIDY DATA #####
 
-cnamevec <- c("vuosineljännes","TOL","kokoluokka",variablechoicevec33)
-
-handoutdata <- handoutdata[-c(1:2),]
-handoutdata <- handoutdata[-c(1021:1078),]
-
-colnames(handoutdata) <- cnamevec
-
-quartallen <- length(which(is.na(handoutdata$vuosineljännes) == FALSE))
-TOLlen <- length(which(is.na(handoutdata$TOL) == FALSE))
-
-quartalgap <- 85
-TOLgap <- 5
-
-handoutdata$vuosineljännes <- zoo::na.locf(handoutdata$vuosineljännes, option="locf")
-handoutdata$TOL <- zoo::na.locf(handoutdata$TOL, option="locf")
-
-handoutdata[handoutdata == "."] <- as.character(0)
-
-handoutdata <- handoutdata[handoutdata$kokoluokka != "Kaikki yritykset",]
-handoutdata <- handoutdata[handoutdata$TOL != "Muut toimialat" & handoutdata$TOL != "Toimiala tuntematon" &
-                             handoutdata$TOL != "Ei yritystunnusta",]
-
 propvec <- finalfinalfinaldf$nobs
 
 ##### SORT REVENUE DATA #####
-
-vec34 <- c("(B-E)", "(F)", "(G)", "(HIJLMNRS)")
-
-namerow <- revenuedata[3,]
-
-for (i in 1:16) {
-  namerow[1+i] <- paste(namerow[1+i], vec34[ceiling(i/4)])
-}
-
-namerow[1] <- "Kuukausi"
-
-revenuedata <- revenuedata[-c(1:3),]
-revenuedata <- revenuedata[-c(160:199),]
-colnames(revenuedata) <- namerow
-
-revenuedata$Kuukausi <- gsub('M', '', revenuedata$Kuukausi)
-
-revenuedata$Kuukausi <- as.POSIXct(paste0(as.character(revenuedata$Kuukausi), '01'), format='%Y%m%d')
-
-for (i in 2:length(revenuedata[1,])) {
-  revenuedata[,i] <- as.numeric(unlist(revenuedata[,i]))
-}
 
 ##### SORT FIRM DISTRIBITION DATA #####
 
@@ -871,7 +833,6 @@ for (i in 1:length(scrapedtable[,1])) {
     scrapedtable[i,k] <- gsub(" ", "", scrapedtable[i,k])
   }
 }
-
 
 for (i in 2:length(scrapedtable[1,])) {
   scrapedtable[,i] <- as.numeric(unlist(scrapedtable[,i]))
@@ -903,10 +864,7 @@ scrapedtable <- scrapedtable[ -(nrow(scrapedtable) - 2),]
 
 ##### Sort productivity data #####
 
-#print(kunnatmaakunnat)
-#print(kunnattuottavuus)
-
-kunnatmaakunnat <- read.csv2("data/kunnat_maakunnat_avain.csv")
+kunnatmaakunnat <- read_csv2("data/kunnat_maakunnat_avain.csv")
 
 kunnatmaakunnat <- kunnatmaakunnat[,c(1, 4)]
 kunnatmaakunnat <- kunnatmaakunnat[-c(1),]
@@ -914,12 +872,13 @@ kunnatmaakunnat <- kunnatmaakunnat[-c(1),]
 colnames(kunnatmaakunnat) <- c("kunta", "maakunnat")
 
 kunnatmaakunnat$kunta <- gsub("'", "", kunnatmaakunnat$kunta)
-kunnatmaakunnat$maakunnat <- gsub("\xe4", "ä", kunnatmaakunnat$maakunnat)
+#kunnatmaakunnat$maakunnat <- gsub("ä", "ä", kunnatmaakunnat$maakunnat)
+kunnatmaakunnat$maakunnat <- iconv(kunnatmaakunnat$maakunnat, from = "ISO-8859-1", to = "UTF-8")
 
 
 colnames(kunnattuottavuus) <- c("nro","kunta", "vuosi", "prod1", "nobs")
 
-kunnatmaakunnat[,1] <- substr(kunnatmaakunnat[,1], 1, 3)
+kunnatmaakunnat$kunta <- as.numeric(kunnatmaakunnat$kunta)
 
 productivity <- join(kunnattuottavuus, kunnatmaakunnat, by="kunta")
 productivity <- na.omit(productivity)
@@ -936,7 +895,9 @@ for (i in 1:length(unique(productivity$vuosi))) {
                                                                                                    & productivity$maakunnat == unique(productivity$maakunnat)[k]]*productivity$nobs[productivity$vuosi == unique(productivity$vuosi)[i]
                                                                                                                                                                                     & productivity$maakunnat == unique(productivity$maakunnat)[k]], na.omit=TRUE)/(sum(productivity$nobs[productivity$vuosi == unique(productivity$vuosi)[i]
                                                                                                                                                                                                                                                                                          & productivity$maakunnat == unique(productivity$maakunnat)[k]], na.omit=TRUE))
-  }
+    aggregateproddf$nobs[k+(i-1)*length(unique(productivity$maakunnat))] <- sum(productivity$nobs[productivity$maakunnat == unique(productivity$maakunnat)[k] & productivity$vuosi == unique(productivity$vuosi)[i]])
+      
+    }
 }
 
 ##### COLORS #####
@@ -956,3 +917,9 @@ DHcolors <- c(dark_green, light_green, dark_blue, light_blue, dark_red, light_re
 DHcolors2 <- c(dark_red, light_red, yellow, orange)
 
 DHcolors3 <- c(light_red, yellow, orange, light_orange)
+
+##### FONT #####
+
+font1 <- list(family = "Arial",
+             size=12,
+             color = "black")
